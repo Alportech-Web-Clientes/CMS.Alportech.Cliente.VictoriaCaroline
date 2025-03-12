@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Início";
+}
+<!-- Dashboard Overview Page -->
+<h1>Visão Geral</h1>
+
+<div class="dashboard-summary">
+    <div class="summary-card">
+        <h3>Projetos</h3>
+        <p class="summary-value" id="projectsCount">0</p>
+    </div>
+    <div class="summary-card">
+        <h3>Experiências</h3>
+        <p class="summary-value" id="experienceCount">0</p>
+    </div>
+    <div class="summary-card">
+        <h3>Formações</h3>
+        <p class="summary-value" id="educationCount">0</p>
+    </div>
+    <div class="summary-card">
+        <h3>Habilidades</h3>
+        <p class="summary-value" id="skillsCount">0</p>
+    </div>
+</div>
+
+<div class="recent-activity">
+    <h2>Atividades Recentes</h2>
+    <div class="activity-list" id="activityList">
+        <div class="activity-item">
+            <span class="activity-icon">🔄</span>
+            <div class="activity-content">
+                <p class="activity-text">Bem-vindo ao Dashboard Administrativo</p>
+                <p class="activity-time">Agora</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-actions">
+    <h2>Ações Rápidas</h2>
+    <div class="action-buttons">
+        <button class="action-btn" data-target="projects">
+            <span class="action-icon">➕</span>
+            Adicionar Projeto
+        </button>
+        <button class="action-btn" data-target="experience">
+            <span class="action-icon">➕</span>
+            Adicionar Experiência
+        </button>
+        <button class="action-btn" data-target="education">
+            <span class="action-icon">➕</span>
+            Adicionar Formação
+        </button>
+        <button class="action-btn" data-target="skills">
+            <span class="action-icon">➕</span>
+            Adicionar Habilidade
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+
+}

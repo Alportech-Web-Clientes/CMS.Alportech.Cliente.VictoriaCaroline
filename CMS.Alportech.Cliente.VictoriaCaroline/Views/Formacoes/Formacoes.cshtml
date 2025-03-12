@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Formações";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Formação</h1>
+    <button class="add-btn" id="addEducationBtn">Adicionar Formação</button>
+</div>
+
+<div class="content-table">
+    <table id="educationTable">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Instituição</th>
+                <th>Período</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Education items will be loaded here -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Add/Edit Education Modal -->
+<div id="educationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="educationModalTitle">Adicionar Formação</h2>
+        <form id="educationForm">
+            <input type="hidden" id="educationId">
+            <div class="form-group">
+                <label for="degree">Curso/Grau</label>
+                <input type="text" id="degree" required>
+            </div>
+            <div class="form-group">
+                <label for="institution">Instituição</label>
+                <input type="text" id="institution" required>
+            </div>
+            <div class="form-group">
+                <label for="eduStartDate">Ano de Início</label>
+                <input type="text" id="eduStartDate" placeholder="Ex: 2016" required>
+            </div>
+            <div class="form-group">
+                <label for="eduEndDate">Ano de Conclusão</label>
+                <input type="text" id="eduEndDate" placeholder="Ex: 2020 ou Presente">
+            </div>
+            <div class="form-group">
+                <label for="eduDescription">Descrição</label>
+                <textarea id="eduDescription" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="eduType">Tipo</label>
+                <select id="eduType" required>
+                    <option value="academic">Formação Acadêmica</option>
+                    <option value="certification">Certificação/Curso</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+
+}

@@ -1,0 +1,642 @@
+﻿@{
+    ViewData["Title"] = "Projetos";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Projetos</h1>
+    <button class="add-btn" id="addProjectBtn">Adicionar Projeto</button>
+</div>
+
+<div class="content-table">
+    <table id="projectsTable">
+        <thead>
+            <tr>
+                <th>Titulo</th>
+                <th>Descrição</th>
+                <th>Tags</th>
+                <th>Objetivos</th>
+                <th>Resultados</th>
+                <th>Imagem</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add Project Modal -->
+<div id="addProjectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAddModal()">&times;</span>
+        <h2>Adicionar Projeto</h2>
+
+        <form id="addProjectForm">
+            <div class="form-group">
+                <label for="addProjectTitle">Título do Projeto</label>
+                <input type="text" id="addProjectTitle" required>
+            </div>
+
+            <div class="form-group">
+                <label for="addProjectDescription">Descrição</label>
+                <textarea id="addProjectDescription" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="addProjectGoals">Objetivos</label>
+                <textarea id="addProjectGoals" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="addProjectResults">Resultados</label>
+                <textarea id="addProjectResults" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="addProjectImageUpload">Imagem do Projeto (opcional)</label>
+                <input type="file" id="addProjectImageUpload" accept="image/*">
+                <!-- Campo de pré-visualização da imagem com botão de remover -->
+                <div id="addProjectImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="addProjectImagePreview" src="" style="max-width: 100px;">
+                    <button id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="addProjectTags">Tags</label>
+                <div id="addTagContainer" class="tag-container">
+                    <input type="text" id="addTagInput" placeholder="Digite uma tag e pressione Enter">
+                </div>
+                <input type="hidden" id="addProjectTags" name="addProjectTags">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Project Modal -->
+<div id="editProjectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        <h2>Editar Projeto</h2>
+
+        <form id="editProjectForm">
+            <input type="hidden" id="editProjectId">
+
+            <div class="form-group">
+                <label for="editProjectTitle">Título do Projeto</label>
+                <input type="text" id="editProjectTitle" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editProjectDescription">Descrição</label>
+                <textarea id="editProjectDescription" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="editProjectGoals">Objetivos</label>
+                <textarea id="editProjectGoals" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="editProjectResults">Resultados</label>
+                <textarea id="editProjectResults" rows="3" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="editProjectImageUpload">Imagem do Projeto (opcional)</label>
+                <input type="file" id="editProjectImageUpload" accept="image/*">
+                <img id="editProjectImagePreview" src="" style="max-width: 100px; display: block;">
+            </div>
+
+            <div class="form-group">
+                <label for="editProjectTags">Tags</label>
+                <div id="editTagContainer" class="tag-container">
+                    <input type="text" id="editTagInput" placeholder="Digite uma tag e pressione Enter">
+                </div>
+                <input type="hidden" id="editProjectTags" name="editProjectTags">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir o projeto "<span id="projectNameToDelete"></span>"?</p>
+
+        <!-- Adicionando o indicador de carregamento e mensagem -->
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo projeto...</span>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addProjectBtn = document.getElementById("addProjectBtn");
+            const addProjectModal = document.getElementById("addProjectModal");
+            const editProjectModal = document.getElementById("editProjectModal");
+
+            // Mostrar o modal de adicionar projeto
+            addProjectBtn.addEventListener("click", function () {
+                openAddModal();
+            });
+
+            // Fechar o modal de adicionar projeto
+            window.closeAddModal = function () {
+                addProjectModal.style.display = "none";
+                resetAddForm();
+            };
+
+            // Fechar o modal de editar projeto
+            window.closeEditModal = function () {
+                editProjectModal.style.display = "none";
+                resetEditForm();
+            };
+
+            // Resetar o formulário de adicionar projeto
+            function resetAddForm() {
+                document.getElementById("addProjectForm").reset();
+                tags = [];
+                updateTagUI(tags, "addTagContainer", "addProjectTags");
+                document.getElementById("addProjectImagePreview").src = "";
+            }
+
+            // Resetar o formulário de editar projeto
+            function resetEditForm() {
+                document.getElementById("editProjectForm").reset();
+                tags = [];
+                updateTagUI(tags, "editTagContainer", "editProjectTags");
+                document.getElementById("editProjectImagePreview").src = "";
+            }
+
+            // Abrir o modal de adicionar projeto
+            window.openAddModal = function () {
+                addProjectModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar projeto
+            window.openEditModal = function () {
+                editProjectModal.style.display = "block";
+            };
+        });
+
+        // Gerenciamento de tags
+        let tags = [];
+
+        function setupTagInput(containerId, inputId, hiddenInputId) {
+            const tagInput = document.getElementById(inputId);
+            const tagContainer = document.getElementById(containerId);
+            const hiddenTagInput = document.getElementById(hiddenInputId);
+
+            tagInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && tagInput.value.trim() !== '') {
+                    e.preventDefault();
+                    const tag = tagInput.value.trim();
+
+                    if (!tags.includes(tag)) {
+                        tags.push(tag);
+                        updateTagUI(tags, containerId, hiddenInputId);
+                    }
+                    tagInput.value = '';
+                }
+            });
+        }
+
+        function updateTagUI(tagsArray, containerId, hiddenInputId) {
+            const tagContainer = document.getElementById(containerId);
+            const tagInput = document.getElementById(containerId === "addTagContainer" ? "addTagInput" : "editTagInput");
+            tagContainer.innerHTML = ""; // Limpa as tags antigas
+
+            tagsArray.forEach(tag => {
+                const tagElement = document.createElement("span");
+                tagElement.className = "tag";
+                tagElement.textContent = tag;
+
+                const removeBtn = document.createElement("span");
+                removeBtn.className = "remove-tag";
+                removeBtn.textContent = " ×";
+                removeBtn.onclick = () => {
+                    tags = tags.filter(t => t !== tag);
+                    updateTagUI(tags, containerId, hiddenInputId);
+                    updateHiddenInput(hiddenInputId);
+                };
+
+                tagElement.appendChild(removeBtn);
+                tagContainer.appendChild(tagElement);
+            });
+
+            // Adiciona o campo de input novamente no final
+            tagContainer.appendChild(tagInput);
+        }
+
+        function updateHiddenInput(hiddenInputId) {
+            document.getElementById(hiddenInputId).value = tags.join(";");
+        }
+
+        // Configurar os inputs de tags para ambas as modais
+        setupTagInput("addTagContainer", "addTagInput", "addProjectTags");
+        setupTagInput("editTagContainer", "editTagInput", "editProjectTags");
+
+        // Lógica para adicionar projeto
+        document.getElementById("addProjectForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addProjectTitle").value.trim();
+            const descricao = document.getElementById("addProjectDescription").value.trim();
+            const objetivos = document.getElementById("addProjectGoals").value.trim();
+            const resultados = document.getElementById("addProjectResults").value.trim();
+            const selectedTags = tags.length > 0 ? tags.join(";") : "";
+            const fileInput = document.getElementById("addProjectImageUpload");
+            const imagePreview = document.getElementById("editProjectImagePreview");
+            const idProjeto = Date.now().toString();
+            const idUsuario = ""; // exemplo fixo
+
+            if (!titulo || !descricao || !objetivos || !resultados || tags.length === 0) {
+                showNotification("Preencha todos os campos obrigatórios (Título, Descrição, Objetivos, Resultados, Tags).");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
+            } else {
+                imagemBase64 = imagemBase64.split(",")[1];
+            }
+
+            const projeto = {
+                idProjeto,
+                idUsuario,
+                imagemProjetoBase64: imagemBase64,
+                tituloProjeto: titulo,
+                descricaoProjeto: descricao,
+                tagsProjeto: selectedTags,
+                objetivosProjeto: objetivos,
+                resultadosProjeto: resultados
+            };
+
+            try {
+                const response = await fetch("/Projetos/AdicionarProjeto", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(projeto)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    showNotification("Projeto adicionado com sucesso!");
+                    location.reload();
+                } else {
+                    showNotification("Erro: " + (result.message || "Erro desconhecido"));
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar projeto: " + err.message);
+            }
+        });
+
+        // Lógica para editar projeto
+        document.getElementById("editProjectForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const idProjeto = document.getElementById("editProjectId").value;
+            const titulo = document.getElementById("editProjectTitle").value.trim();
+            const descricao = document.getElementById("editProjectDescription").value.trim();
+            const objetivos = document.getElementById("editProjectGoals").value.trim();
+            const resultados = document.getElementById("editProjectResults").value.trim();
+            const selectedTags = tags.length > 0 ? tags.join(";") : "";
+            const fileInput = document.getElementById("editProjectImageUpload");
+            const imagePreview = document.getElementById("editProjectImagePreview");
+
+            if (!titulo || !descricao || !objetivos || !resultados || tags.length === 0) {
+                showNotification("Preencha todos os campos obrigatórios (Título, Descrição, Objetivos, Resultados, Tags).");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = "";
+
+            if (fileInput.files.length > 0) {
+                imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+                imagemBase64 = imagemBase64.split(",")[1];
+            } else {
+                imagemBase64 = imagePreview.src.startsWith("data:image")
+                    ? imagePreview.src.split(",")[1]
+                    : "";
+            }
+
+            const projeto = {
+                idProjeto,
+                tituloProjeto: titulo,
+                descricaoProjeto: descricao,
+                tagsProjeto: selectedTags,
+                objetivosProjeto: objetivos,
+                resultadosProjeto: resultados,
+                imagemProjetoBase64: imagemBase64
+            };
+
+            try {
+                const response = await fetch("/Projetos/EditarProjeto", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(projeto)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    showNotification("Projeto editado com sucesso!");
+                    location.reload();
+                } else {
+                    showNotification("Erro ao editar projeto: " + result.message, "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar projeto: " + err.message, "error");
+            }
+        });
+
+        // Função para carregar projetos na tabela
+        async function carregarProjetos() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#projectsTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Projetos/ObterProjetos");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar projetos:", result.message);
+                    return;
+                }
+
+                result.projetos.forEach(projeto => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                <td>${projeto.tituloProjeto}</td>
+                                <td>${projeto.descricaoProjeto}</td>
+                                <td>${projeto.tagsProjeto.split(";").map(tag => `<span class="tag">${tag}</span>`).join(", ")}</td>
+                                <td>${projeto.objetivosProjeto}</td>
+                                <td>${projeto.resultadosProjeto}</td>
+                                <td><img src="data:image/png;base64,${projeto.imagemProjetoBase64}" width="50"></td>
+                                <td>
+                                    <button class="edit-btn" onclick="editarProjeto('${projeto.idProjeto}')">✏️</button>
+                                    <button class="delete-btn" onclick="deletarProjeto('${projeto.idProjeto}')">🗑️</button>
+                                </td>
+                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar projetos:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+
+        // Função para editar projeto
+        window.editarProjeto = function (idProjeto) {
+            fetch("/Projetos/ObterProjetos")
+                .then(response => response.json())
+                .then(data => {
+                    const projeto = data.projetos.find(p => p.idProjeto === idProjeto);
+                    if (projeto) {
+                        document.getElementById("editProjectId").value = projeto.idProjeto;
+                        document.getElementById("editProjectTitle").value = projeto.tituloProjeto;
+                        document.getElementById("editProjectDescription").value = projeto.descricaoProjeto;
+                        document.getElementById("editProjectGoals").value = projeto.objetivosProjeto;
+                        document.getElementById("editProjectResults").value = projeto.resultadosProjeto;
+                        document.getElementById("editProjectTags").value = projeto.tagsProjeto;
+
+                        tags = projeto.tagsProjeto ? projeto.tagsProjeto.split(";") : [];
+                        updateTagUI(tags, "editTagContainer", "editProjectTags");
+
+                        if (projeto.imagemProjetoBase64) {
+                            document.getElementById("editProjectImagePreview").src = `data:image/png;base64,${projeto.imagemProjetoBase64}`;
+                        } else {
+                            document.getElementById("editProjectImagePreview").src = "/images/default_banner_projeto.jpg";
+                        }
+
+                        openEditModal();
+                    }
+                });
+        };
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar projetos ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarProjetos();
+        });
+    </script>
+
+    <script>
+        let projetoParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarProjeto = function (idProjeto, tituloProjeto) {
+            projetoParaDeletar = idProjeto;
+            document.getElementById("projectNameToDelete").textContent = tituloProjeto;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            projetoParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!projetoParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Projetos/DeletarProjeto?idProjeto=${projetoParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification("Projeto excluído com sucesso!");
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir projeto: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir projeto: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar projetos para incluir o nome do projeto no botão de exclusão
+        async function carregarProjetos() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#projectsTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Projetos/ObterProjetos");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar projetos:", result.message);
+                    return;
+                }
+
+                result.projetos.forEach(projeto => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                            <td>${projeto.tituloProjeto}</td>
+                            <td>${projeto.descricaoProjeto}</td>
+                            <td>${projeto.tagsProjeto.split(";").map(tag => `<span class="tag">${tag}</span>`).join(", ")}</td>
+                            <td>${projeto.objetivosProjeto}</td>
+                            <td>${projeto.resultadosProjeto}</td>
+                            <td><img src="data:image/png;base64,${projeto.imagemProjetoBase64}" width="50"></td>
+                            <td>
+                                <button class="edit-btn" onclick="editarProjeto('${projeto.idProjeto}')">✏️</button>
+                                <button class="delete-btn" onclick="deletarProjeto('${projeto.idProjeto}', '${projeto.tituloProjeto}')">🗑️</button>
+                            </td>
+                        `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar projetos:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const addProjectImageUpload = document.getElementById("addProjectImageUpload");
+    const addProjectImagePreview = document.getElementById("addProjectImagePreview");
+    const addProjectImagePreviewContainer = document.getElementById("addProjectImagePreviewContainer");
+    const removeImageBtn = document.getElementById("removeImageBtn");
+
+    // Evento para exibir a pré-visualização da imagem
+    addProjectImageUpload.addEventListener("change", function () {
+        const file = addProjectImageUpload.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                addProjectImagePreview.src = e.target.result;
+                addProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+            };
+            reader.readAsDataURL(file);
+        } else {
+            resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+        }
+    });
+
+    // Evento para remover a imagem
+    removeImageBtn.addEventListener("click", function () {
+        resetImagePreview();
+    });
+
+    // Função para resetar a pré-visualização e o campo de upload
+    function resetImagePreview() {
+        addProjectImagePreview.src = "";
+        addProjectImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+        addProjectImageUpload.value = ""; // Limpa o campo de upload
+    }
+
+    // Resetar a pré-visualização ao abrir a modal de adição
+    document.getElementById("addProjectBtn").addEventListener("click", function () {
+        resetImagePreview();
+    });
+});    </script>
+}

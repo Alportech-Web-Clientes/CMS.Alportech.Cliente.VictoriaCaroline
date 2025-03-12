@@ -1,0 +1,331 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Criar Conta - Alporflix</title>
+
+    <!-- Google Font Api KEY-->
+    <meta name="google_font_api" content="AIzaSyBG58yNdAjc20_8jAvLNSVi9E4Xhwjau_k">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="~/favicon.ico" />
+
+    <!-- Library / Plugin Css Build -->
+    <link rel="stylesheet" href="~/css/core/libs.min.css" />
+
+    <!-- font-awesome css -->
+    <link rel="stylesheet" href="~/lib/vendor/font-awesome/css/all.min.css" />
+
+    <!-- Iconly css -->
+    <link rel="stylesheet" href="~/lib/vendor/iconly/css/style.css" />
+
+    <!-- Animate css -->
+    <link rel="stylesheet" href="~/lib/vendor/animate.min.css" />
+
+    <!-- SwiperSlider css -->
+    <link rel="stylesheet" href="~/lib/vendor/swiperSlider/swiper.min.css">
+
+    <!-- Custom Css -->
+    <link rel="stylesheet" href="~/css/custom.min.css" />
+
+    <!-- Streamit Design System Css -->
+    <link rel="stylesheet" href="~/css/streamit.min.css" />
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300&display=swap" rel="stylesheet">
+
+    <style>
+        .position-relative {
+            position: relative;
+        }
+
+        .eye-icon {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            z-index: 99999;
+            font-size: 18px;
+            color: #39cf5b;
+        }
+
+        .input-group .form-control {
+            padding-right: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-content">
+        <!-- FORMULARIO CADASTRO -->
+        <div style="height: 100% !important; width: 100%; display: flex; align-items: center; justify-content: center; background: url('/images/pages/01.webp'); background-size: cover; background-repeat: no-repeat; position: relative;min-height:500px">
+            <div class="container">
+                <div class="row justify-content-center align-items-center height-self-center">
+
+                    <div class="col-lg-5 col-md-12 align-self-center">
+
+                        <div class="user-login-card bg-body mt-5 mb-5">
+
+                            <h4 style="color: #fff" class="text-center mt-2 mb-2">Crie Sua Conta</h4>
+
+                            <!-- FORMULARIO -->
+                            <form method="post" id="registerForm" enctype="multipart/form-data" action="@Url.Action("Register", "Auth")">
+                                @Html.AntiForgeryToken()
+
+                                <p id="error-message-login" style="color: #FF0000; text-align: center; font-size: .875rem; font-weight: 500;">@ViewBag.Error</p>
+
+                                <div class="row">
+                                    <!-- nome usuario -->
+                                    <div class="mb-3">
+                                        <label class="text-white fw-500 mb-2">Usuário</label>
+                                        <input type="text" name="nome" class="form-control rounded-0" required="">
+                                    </div>
+
+                                    <!-- email -->
+                                    <div class="mb-3">
+                                        <label class="text-white fw-500 mb-2">Email</label>
+                                        <input type="email" name="email" class="form-control rounded-0" required="">
+                                    </div>
+
+                                    <!-- senha -->
+                                    <div class="col-lg-6 mb-3">
+                                        <label class="text-white fw-500 mb-2">Senha</label>
+                                        <div class="position-relative">
+                                            <input type="password" name="senha" class="form-control rounded-0 pr-5" id="senha" required="">
+                                            <span class="eye-icon" id="togglePassword1" style="cursor: pointer;">
+                                                <i class="fa-solid fa-eye" id="eyeIcon1" style="color: #39cf5b;"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- confirmar senha -->
+                                    <div class="col-lg-6 mb-3">
+                                        <label class="text-white fw-500 mb-2">Confirmar Senha</label>
+                                        <div class="position-relative">
+                                            <input type="password" name="confirmaSenha" class="form-control rounded-0 pr-5" id="confirmaSenha" required="">
+                                            <span class="eye-icon" id="togglePassword2" style="cursor: pointer;">
+                                                <i class="fa-solid fa-eye" id="eyeIcon2" style="color: #39cf5b;"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- foto perfil -->
+                                    <div class="mb-3" style="display: flex; flex-direction: column">
+                                        <label class="text-white fw-500 mb-2">Foto de Perfil (opcional)</label>
+                                        <input type="file" name="fotoPerfil" class="rounded-0" accept="image/*">
+                                    </div>
+
+                                </div>
+
+                                <!-- lmebrar de mim -->
+                                <label class="list-group-item d-flex align-items-center mt-3 mb-3 text-white">
+                                    <input class="form-check-input m-0 me-2" type="checkbox" name="lembrarDeMim" value="true">Lembre-se de mim
+                                </label>
+
+                                <!-- termos de uso -->
+                                <label class="list-group-item d-flex flex-wrap align-items-center mb-3 text-white">
+                                    <input class="form-check-input m-0 me-2" type="checkbox" name="termos" id="termos">
+                                    Eu li e aceito os
+                                    <a href="" class="ms-1" style="color: #0b6d00">termos & condições*</a>
+                                </label>
+
+
+                                <div class="full-button">
+                                    <div class="iq-button">
+                                        <a href="#" id="submitLink" class="btn text-uppercase position-relative">
+                                            <span class="button-text">Criar Conta</span>
+                                            <i class="fa-solid fa-play"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- LOGIN -->
+                            <p class="my-3 text-center fw-500 text-white">
+                                Já possui conta?
+                                <a href="@Url.Action("Login", "Auth")" class="text-primary ms-1">Entrar</a>
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="~/js/core/libs.min.js"></script>
+    <!-- Lodash Utility -->
+    <script src="~/lib/vendor/lodash/lodash.min.js"></script>
+    <!-- External Library Bundle Script -->
+    <script src="~/js/core/external.min.js"></script>
+    <!-- countdown Script -->
+    <script src="~/js/plugins/countdown.js"></script>
+    <!-- utility Script -->
+    <script src="~/js/utility.js"></script>
+    <!-- Setting Script -->
+    <script src="~/js/setting.js"></script>
+    <script src="~/js/setting-init.js" defer></script>
+    <!-- Streamit Script -->
+    <script src="~/js/streamit.js" defer></script>
+    <script src="~/js/swiper.js" defer></script>
+
+    <!-- Script JavaScript -->
+    <script>
+        document.getElementById("submitLink").addEventListener("click", function (event) {
+            event.preventDefault(); // Evita o redirecionamento padrão do link
+
+            // Obtém os campos de usuario, email e senha
+            const nome = document.querySelector("input[name='nome']");
+            const emailField = document.querySelector("input[name='email']");
+            const passwordField = document.querySelector("input[name='senha']");
+            const confirmPasswordField = document.querySelector("input[name='confirmaSenha']");
+            const termosCheckbox = document.getElementById("termos");
+
+            // Remove qualquer alerta existente
+            removeAlerts();
+
+            // Limpa a mensagem de erro de login, caso haja
+            document.getElementById("error-message-login").innerText = '';
+
+            // Valida se os campos estão preenchidos
+            if (!nome.value) {
+                showAlert("Por favor, preencha o campo Usuário.");
+                nome.focus();
+                return;
+            }
+
+            if (!emailField.value) {
+                showAlert("Por favor, preencha o campo de email.");
+                emailField.focus();
+                return;
+            }
+
+            // Validação automática do campo de email (nativa do navegador)
+            if (!emailField.checkValidity()) {
+                showAlert("Por favor, insira um email válido.");
+                emailField.focus();
+                return;
+            }
+
+            if (!passwordField.value) {
+                showAlert("Por favor, preencha o campo de senha.");
+                passwordField.focus();
+                return;
+            }
+
+            if (!confirmPasswordField.value) {
+                showAlert("Por favor, preencha o campo de confirmação de senha.");
+                confirmPasswordField.focus();
+                return;
+            }
+
+            // Verifica se as senhas são iguais
+            if (passwordField.value !== confirmPasswordField.value) {
+                showAlert("As senhas não coincidem.");
+                confirmPasswordField.focus();
+                return;
+            }
+
+            // Verifica se os termos estão aceitos
+            if (!termosCheckbox.checked) {
+                showAlert("Por favor, aceite os termos e condições.");
+                return;
+            }
+
+            // Submete o formulário se tudo estiver preenchido
+            document.getElementById("registerForm").submit();
+        });
+
+        // Função para alternar a visibilidade das senhas
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Adiciona eventos para alternar a visibilidade das senhas
+        document.getElementById("togglePassword1").addEventListener("click", function () {
+            togglePasswordVisibility('senha', 'eyeIcon1');
+        });
+
+        document.getElementById("togglePassword2").addEventListener("click", function () {
+            togglePasswordVisibility('confirmaSenha', 'eyeIcon2');
+        });
+
+        // Função para exibir o alerta no canto superior direito
+        function showAlert(message) {
+            // Cria o elemento de alerta
+            const alert = document.createElement("div");
+            alert.className = "alert alert-warning alert-dismissible fade show position-fixed top-0 end-0 m-3 p-2";
+            alert.style.zIndex = "1050"; // Garante que o alerta fique acima dos outros elementos
+
+            // Adiciona a classe 'shake' para aplicar o efeito de shake
+            alert.classList.add("shake");
+
+            // Conteúdo do alerta
+            alert.innerHTML = `
+                                <strong>Atenção!</strong> ${message}&nbsp;
+                                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            `;
+
+            // Adiciona o alerta ao body
+            document.body.appendChild(alert);
+
+            // Remove o alerta após 5 segundos
+            setTimeout(() => {
+                alert.classList.remove("show");
+                alert.classList.add("fade");
+                setTimeout(() => alert.remove(), 150);
+            }, 5000);
+        }
+
+        // Função para remover todos os alertas da tela
+        function removeAlerts() {
+            const existingAlerts = document.querySelectorAll(".alert");
+            existingAlerts.forEach(alert => alert.remove());
+        }
+
+        // Adiciona eventos para remover os alertas assim que os campos forem corrigidos
+        document.querySelector("input[name='nome']").addEventListener("input", function () {
+            removeAlerts(); // Remove qualquer alerta existente
+            document.getElementById("error-message-login").innerText = ''; // Limpa a mensagem de erro específica do cadastro
+        });
+
+        document.querySelector("input[name='email']").addEventListener("input", function () {
+            removeAlerts(); // Remove qualquer alerta existente
+            document.getElementById("error-message-login").innerText = ''; // Limpa a mensagem de erro específica do cadastro
+        });
+
+        document.querySelector("input[name='senha']").addEventListener("input", function () {
+            removeAlerts(); // Remove qualquer alerta existente
+            document.getElementById("error-message-login").innerText = ''; // Limpa a mensagem de erro específica do login
+        });
+
+        document.querySelector("input[name='confirmaSenha']").addEventListener("input", function () {
+            removeAlerts(); // Remove qualquer alerta existente
+            document.getElementById("error-message-login").innerText = ''; // Limpa a mensagem de erro específica do login
+        });
+    </script>
+</body>
+</html>
