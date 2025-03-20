@@ -25,6 +25,8 @@
     </table>
 </div>
 
+<input type="hidden" id="editProjectExistingImage" name="editProjectExistingImage">
+
 <div id="loading" style="display: none; text-align: center; margin: 20px;">
     <span width="50"></span>
 </div>
@@ -62,7 +64,7 @@
                 <!-- Campo de pré-visualização da imagem com botão de remover -->
                 <div id="addProjectImagePreviewContainer" style="margin-top: 10px; display: none;">
                     <img id="addProjectImagePreview" src="" style="max-width: 100px;">
-                    <button id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                    <button type="button" id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
                 </div>
             </div>
 
@@ -114,7 +116,10 @@
             <div class="form-group">
                 <label for="editProjectImageUpload">Imagem do Projeto (opcional)</label>
                 <input type="file" id="editProjectImageUpload" accept="image/*">
-                <img id="editProjectImagePreview" src="" style="max-width: 100px; display: block;">
+                <div id="editProjectImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="editProjectImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeEditImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
             </div>
 
             <div class="form-group">
@@ -350,25 +355,29 @@
 
             showLoadingOverlay();
 
-            let imagemBase64 = "";
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
 
-            if (fileInput.files.length > 0) {
-                imagemBase64 = await getBase64FromFile(fileInput.files[0]);
-                imagemBase64 = imagemBase64.split(",")[1];
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
             } else {
-                imagemBase64 = imagePreview.src.startsWith("data:image")
-                    ? imagePreview.src.split(",")[1]
-                    : "";
+                imagemBase64 = imagemBase64.split(",")[1];
             }
 
             const projeto = {
                 idProjeto,
+                imagemProjetoBase64: imagemBase64,
                 tituloProjeto: titulo,
                 descricaoProjeto: descricao,
                 tagsProjeto: selectedTags,
                 objetivosProjeto: objetivos,
-                resultadosProjeto: resultados,
-                imagemProjetoBase64: imagemBase64
+                resultadosProjeto: resultados
             };
 
             try {
@@ -393,48 +402,6 @@
             }
         });
 
-        // Função para carregar projetos na tabela
-        async function carregarProjetos() {
-            const loading = document.getElementById("loading");
-            const tbody = document.querySelector("#projectsTable tbody");
-
-            try {
-                loading.style.display = "block";
-                tbody.innerHTML = "";
-
-                const response = await fetch("/Projetos/ObterProjetos");
-                const result = await response.json();
-
-                if (!result.success) {
-                    console.error("Erro ao buscar projetos:", result.message);
-                    return;
-                }
-
-                result.projetos.forEach(projeto => {
-                    const row = document.createElement("tr");
-
-                    row.innerHTML = `
-                                <td>${projeto.tituloProjeto}</td>
-                                <td>${projeto.descricaoProjeto}</td>
-                                <td>${projeto.tagsProjeto.split(";").map(tag => `<span class="tag">${tag}</span>`).join(", ")}</td>
-                                <td>${projeto.objetivosProjeto}</td>
-                                <td>${projeto.resultadosProjeto}</td>
-                                <td><img src="data:image/png;base64,${projeto.imagemProjetoBase64}" width="50"></td>
-                                <td>
-                                    <button class="edit-btn" onclick="editarProjeto('${projeto.idProjeto}')">✏️</button>
-                                    <button class="delete-btn" onclick="deletarProjeto('${projeto.idProjeto}')">🗑️</button>
-                                </td>
-                            `;
-
-                    tbody.appendChild(row);
-                });
-            } catch (err) {
-                console.error("Erro ao carregar projetos:", err);
-            } finally {
-                loading.style.display = "none";
-            }
-        }
-
         // Função para editar projeto
         window.editarProjeto = function (idProjeto) {
             fetch("/Projetos/ObterProjetos")
@@ -442,6 +409,7 @@
                 .then(data => {
                     const projeto = data.projetos.find(p => p.idProjeto === idProjeto);
                     if (projeto) {
+                        // Preenche os campos do formulário
                         document.getElementById("editProjectId").value = projeto.idProjeto;
                         document.getElementById("editProjectTitle").value = projeto.tituloProjeto;
                         document.getElementById("editProjectDescription").value = projeto.descricaoProjeto;
@@ -449,20 +417,53 @@
                         document.getElementById("editProjectResults").value = projeto.resultadosProjeto;
                         document.getElementById("editProjectTags").value = projeto.tagsProjeto;
 
+                        // Preenche as tags
                         tags = projeto.tagsProjeto ? projeto.tagsProjeto.split(";") : [];
                         updateTagUI(tags, "editTagContainer", "editProjectTags");
 
+                        // Exibe a imagem do projeto na pré-visualização
+                        const editProjectImagePreview = document.getElementById("editProjectImagePreview");
+                        const editProjectImagePreviewContainer = document.getElementById("editProjectImagePreviewContainer");
+
                         if (projeto.imagemProjetoBase64) {
-                            document.getElementById("editProjectImagePreview").src = `data:image/png;base64,${projeto.imagemProjetoBase64}`;
+                            editProjectImagePreview.src = `data:image/png;base64,${projeto.imagemProjetoBase64}`;
+                            editProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+
+                            // Preenche o campo de upload com a imagem existente
+                            const editProjectImageUpload = document.getElementById("editProjectImageUpload");
+                            const file = base64ToFile(projeto.imagemProjetoBase64, "imagem_projeto.png");
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            editProjectImageUpload.files = dataTransfer.files;
                         } else {
-                            document.getElementById("editProjectImagePreview").src = "/images/default_banner_projeto.jpg";
+                            // Se não houver imagem, exibe a imagem padrão
+                            editProjectImagePreview.src = "/images/default_banner_projeto.jpg";
+                            editProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
                         }
 
+                        // Abre a modal de edição
                         openEditModal();
                     }
                 });
         };
 
+        function base64ToFile(base64, filename) {
+            // Verifica se a string base64 já contém o prefixo
+            if (!base64.startsWith("data:")) {
+                // Adiciona o prefixo manualmente
+                base64 = `data:image/png;base64,${base64}`;
+            }
+
+            const arr = base64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        }
         // Funções auxiliares
         function showLoadingOverlay() {
             const overlay = document.createElement("div");
@@ -601,42 +602,78 @@
     </script>
 
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const addProjectImageUpload = document.getElementById("addProjectImageUpload");
-    const addProjectImagePreview = document.getElementById("addProjectImagePreview");
-    const addProjectImagePreviewContainer = document.getElementById("addProjectImagePreviewContainer");
-    const removeImageBtn = document.getElementById("removeImageBtn");
+        document.addEventListener("DOMContentLoaded", function () {
+            const addProjectImageUpload = document.getElementById("addProjectImageUpload");
+            const addProjectImagePreview = document.getElementById("addProjectImagePreview");
+            const addProjectImagePreviewContainer = document.getElementById("addProjectImagePreviewContainer");
+            const removeImageBtn = document.getElementById("removeImageBtn");
 
-    // Evento para exibir a pré-visualização da imagem
-    addProjectImageUpload.addEventListener("change", function () {
-        const file = addProjectImageUpload.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                addProjectImagePreview.src = e.target.result;
-                addProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
-            };
-            reader.readAsDataURL(file);
-        } else {
-            resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
-        }
-    });
+            // Evento para exibir a pré-visualização da imagem
+            addProjectImageUpload.addEventListener("change", function () {
+                const file = addProjectImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        addProjectImagePreview.src = e.target.result;
+                        addProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
 
-    // Evento para remover a imagem
-    removeImageBtn.addEventListener("click", function () {
-        resetImagePreview();
-    });
+            // Evento para remover a imagem
+            removeImageBtn.addEventListener("click", function () {
+                resetImagePreview();
+            });
 
-    // Função para resetar a pré-visualização e o campo de upload
-    function resetImagePreview() {
-        addProjectImagePreview.src = "";
-        addProjectImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
-        addProjectImageUpload.value = ""; // Limpa o campo de upload
-    }
+            // Função para resetar a pré-visualização e o campo de upload
+            function resetImagePreview() {
+                addProjectImagePreview.src = "";
+                addProjectImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                addProjectImageUpload.value = ""; // Limpa o campo de upload
+            }
 
-    // Resetar a pré-visualização ao abrir a modal de adição
-    document.getElementById("addProjectBtn").addEventListener("click", function () {
-        resetImagePreview();
-    });
-});    </script>
+            // Resetar a pré-visualização ao abrir a modal de adição
+            document.getElementById("addProjectBtn").addEventListener("click", function () {
+                resetImagePreview();
+            });
+        });    
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editProjectImageUpload = document.getElementById("editProjectImageUpload");
+            const editProjectImagePreview = document.getElementById("editProjectImagePreview");
+            const editProjectImagePreviewContainer = document.getElementById("editProjectImagePreviewContainer");
+            const removeEditImageBtn = document.getElementById("removeEditImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            editProjectImageUpload.addEventListener("change", function () {
+                const file = editProjectImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        editProjectImagePreview.src = e.target.result;
+                        editProjectImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetEditImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeEditImageBtn.addEventListener("click", function () {
+                resetEditImagePreview();
+            });
+
+            function resetEditImagePreview() {
+                editProjectImagePreview.src = "";
+                editProjectImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                editProjectImageUpload.value = ""; // Limpa o campo de upload
+            }
+        });
+    </script>
 }

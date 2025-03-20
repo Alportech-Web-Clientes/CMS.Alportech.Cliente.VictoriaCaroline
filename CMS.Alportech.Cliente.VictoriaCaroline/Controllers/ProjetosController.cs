@@ -115,7 +115,8 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             var usuario = JsonConvert.DeserializeObject<Usuario>(usuarioLogado);
-            var projetos = await _googleSheetsService.ObterDadosDaAba<Projeto>("Projetos");
+            List<Projeto> projetos = null!;
+            projetos = await _googleSheetsService.ObterDadosDaAba<Projeto>("Projetos");
 
             var projetosUsuario = projetos
                 .Where(p => p.IdUsuario == usuario!.IdUsuario)
@@ -148,7 +149,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             var usuario = JsonConvert.DeserializeObject<Usuario>(usuarioLogado);
             projeto.IdUsuario = usuario?.IdUsuario!;
 
-            // 🔹 Buscar o projeto original para manter a imagem se não for alterada
+            // 🔹 Buscar o projeto original para manter a data de criação
             var projetos = await _googleSheetsService.ObterDadosDaAba<Projeto>("Projetos");
             var projetoOriginal = projetos.FirstOrDefault(p => p.IdProjeto == projeto.IdProjeto);
 
@@ -157,26 +158,39 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Projeto não encontrado para edição." });
             }
 
+            projeto.DataCriacaoProjeto = projetoOriginal.DataCriacaoProjeto;
+
             // 🔹 Mantém a imagem original caso nenhuma nova seja enviada
             if (string.IsNullOrWhiteSpace(projeto.ImagemProjetoBase64))
             {
                 projeto.ImagemProjetoBase64 = projetoOriginal.ImagemProjetoBase64;
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbx_fUwgxVbN3oiGWAyUPVKvhDHYtbaOHcEwxljOJYIBkaI4nHBhsARKo_GXdp5iFajBsQ/exec";
-            var content = new StringContent(JsonConvert.SerializeObject(projeto), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(url, content);
+            // 🔸 1 - Deleta projeto antigo
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbxVSD2FEymOAeyPOiTS9ljQSOM5bC3PVjTn8E-cfo2kdNIe31NTdSK3JWGHa4041afx/exec";
+            var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdProjeto = projeto.IdProjeto }), Encoding.UTF8, "application/json");
+            var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
-            if (!response.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode)
             {
-                return Json(new { success = false, message = "Erro ao comunicar com o serviço externo." });
+                return Json(new { success = false, message = "Erro ao deletar projeto original antes da edição." });
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
+            // 🔸 2 - Recria o projeto com as novas informações (usando mesmo IdProjeto)
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbyk0FFkgNNbJxc26_TSUdStuPeRqzIK-s5TEvIwTJmMVq8cpZ1DSPnKeiLGqv56k6YXHw/exec";
+            var createContent = new StringContent(JsonConvert.SerializeObject(projeto), Encoding.UTF8, "application/json");
+            var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
+
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                return Json(new { success = false, message = "Erro ao registrar o projeto atualizado." });
+            }
+
+            var createResponseContent = await createResponse.Content.ReadAsStringAsync();
 
             try
             {
-                var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                var result = JsonConvert.DeserializeObject<dynamic>(createResponseContent);
                 if (result?.success == true)
                 {
                     TempData["SuccessMessage"] = "Projeto editado com sucesso!";
@@ -184,7 +198,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Erro ao editar projeto.";
+                    TempData["ErrorMessage"] = "Erro ao registrar projeto atualizado.";
                     return Json(new { success = false, message = result?.message ?? "Erro desconhecido" });
                 }
             }
