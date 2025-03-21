@@ -95,8 +95,9 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Erro ao adicionar projeto.";
-                    return Json(new { success = false, message = result?.message ?? "Erro desconhecido" });
+                    string mensagem = result?.message ?? "Erro desconhecido";
+                    TempData["ErrorMessage"] = $"Erro ao adicionar projeto: {mensagem}";
+                    return Json(new { success = false, message = result?.message ?? "Erro desconhecido." });
                 }
             }
             catch (JsonException ex)
@@ -198,7 +199,8 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Erro ao registrar projeto atualizado.";
+                    string mensagem = result?.message ?? "Erro desconhecido";
+                    TempData["ErrorMessage"] = $"Erro ao registrar projeto atualizado: {mensagem}";
                     return Json(new { success = false, message = result?.message ?? "Erro desconhecido" });
                 }
             }
@@ -248,7 +250,8 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Erro ao excluir projeto.";
+                    string mensagem = result?.message ?? "Erro desconhecido";
+                    TempData["ErrorMessage"] = $"Erro ao excluir projeto: {mensagem}";
                     return Json(new { success = false, message = result?.message ?? "Erro desconhecido" });
                 }
             }

@@ -161,6 +161,17 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
             const addProjectBtn = document.getElementById("addProjectBtn");
             const addProjectModal = document.getElementById("addProjectModal");
             const editProjectModal = document.getElementById("editProjectModal");
@@ -324,10 +335,7 @@
                 hideLoadingOverlay();
 
                 if (result.success) {
-                    showNotification("Projeto adicionado com sucesso!");
                     location.reload();
-                } else {
-                    showNotification("Erro: " + (result.message || "Erro desconhecido"));
                 }
             } catch (err) {
                 hideLoadingOverlay();
@@ -391,10 +399,7 @@
                 hideLoadingOverlay();
 
                 if (result.success) {
-                    showNotification("Projeto editado com sucesso!");
                     location.reload();
-                } else {
-                    showNotification("Erro ao editar projeto: " + result.message, "error");
                 }
             } catch (err) {
                 hideLoadingOverlay();
@@ -540,7 +545,6 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showNotification("Projeto excluído com sucesso!");
                     location.reload();
                 } else {
                     showNotification("Erro ao excluir projeto: " + result.message, "error");

@@ -2,6 +2,9 @@
     ViewData["Title"] = "Experiências";
 }
 
+@section Styles {
+}
+
 <div class="page-header">
     <h1>Gerenciar Experiências</h1>
     <button class="add-btn" id="addExperienceBtn">Adicionar Experiência</button>
@@ -11,9 +14,13 @@
     <table id="experienceTable">
         <thead>
             <tr>
-                <th>Cargo</th>
-                <th>Empresa</th>
-                <th>Período</th>
+                <th>TítuloExperiencia</th>
+                <th>NomeEmpresa</th>
+                <th>Jornada</th>
+                <th>DataInicioExperiencia</th>
+                <th>DataFimExperiencia</th>
+                <th>TrabalhoAtual</th>
+                <th>DescricaoExperiencia</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -23,45 +30,496 @@
     </table>
 </div>
 
-<!-- Add/Edit Experience Modal -->
-<div id="experienceModal" class="modal">
+<!-- Add Experience Modal -->
+<div id="addExperienceModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="experienceModalTitle">Adicionar Experiência</h2>
-        <form id="experienceForm">
-            <input type="hidden" id="experienceId">
+        <span class="close-modal" onclick="closeAddExperienceModal()">&times;</span>
+        <h2>Adicionar Experiência</h2>
+        <form id="addExperienceForm">
             <div class="form-group">
-                <label for="jobTitle">Cargo</label>
-                <input type="text" id="jobTitle" required>
+                <label for="addJobTitle">Título Experiência</label>
+                <input type="text" id="addJobTitle" required>
             </div>
             <div class="form-group">
-                <label for="company">Empresa</label>
-                <input type="text" id="company" required>
+                <label for="addCompany">Nome da Empresa</label>
+                <input type="text" id="addCompany" required>
             </div>
             <div class="form-group">
-                <label for="startDate">Data de Início</label>
-                <input type="text" id="startDate" placeholder="Ex: 2019" required>
+                <label for="addJornada">Jornada</label>
+                <input type="text" id="addJornada" placeholder="Ex: Tempo Integral, Meio Período.." required>
             </div>
             <div class="form-group">
-                <label for="endDate">Data de Término</label>
-                <input type="text" id="endDate" placeholder="Ex: 2021 ou Presente">
+                <label for="addStartDate">Data de Início</label>
+                <input type="text" id="addStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
             </div>
             <div class="form-group">
-                <label for="jobDescription">Descrição</label>
-                <textarea id="jobDescription" rows="4" required></textarea>
+                <label for="addEndDate">Data de Término</label>
+                <div style="display: flex; justify-content: space-between; width: 100% !important; align-items: center; text-align: center;">
+                    <div style="width: 70%">
+                        <input type="text" id="addEndDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y">
+                    </div>
+                    <div>
+                        <label for="addTrabalhoAtual" style="display: flex;">
+                            <input style="width: 20px; margin-right: 5px;" type="checkbox" id="addTrabalhoAtual">  Trabalho Atual
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
-                <label for="achievements">Realizações (uma por linha)</label>
-                <textarea id="achievements" rows="4"></textarea>
+                <label for="addJobDescription">Descrição</label>
+                <textarea id="addJobDescription" rows="4" required></textarea>
             </div>
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
-                <button type="button" class="cancel-btn">Cancelar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddExperienceModal()">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
-@section Scripts {
+<!-- Edit Experience Modal -->
+<div id="editExperienceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditExperienceModal()">&times;</span>
+        <h2>Editar Experiência</h2>
+        <form id="editExperienceForm">
+            <input type="hidden" id="editExperienceId">
+            <div class="form-group">
+                <label for="editJobTitle">Título Experiência</label>
+                <input type="text" id="editJobTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="editCompany">Nome da Empresa</label>
+                <input type="text" id="editCompany" required>
+            </div>
+            <div class="form-group">
+                <label for="editJornada">Jornada</label>
+                <input type="text" id="editJornada" placeholder="Ex: Tempo Integral, Meio Período.." required>
+            </div>
+            <div class="form-group">
+                <label for="editStartDate">Data de Início</label>
+                <input type="text" id="editStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
+            </div>
+            <div class="form-group">
+                <label for="editEndDate">Data de Término</label>
+                <div style="display: flex; justify-content: space-between; width: 100% !important; align-items: center; text-align: center;">
+                    <div style="width: 70%">
+                        <input type="text" id="editEndDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y">
+                    </div>
+                    <div>
+                        <label for="editTrabalhoAtual" style="display: flex;">
+                            <input style="width: 20px; margin-right: 5px;" type="checkbox" id="editTrabalhoAtual">  Trabalho Atual
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="editJobDescription">Descrição</label>
+                <textarea id="editJobDescription" rows="4" required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditExperienceModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir a experiência "<span id="nomeExperienciaParaDeletar"></span>"?</p>
+
+        <!-- Adicionando o indicador de carregamento e mensagem -->
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo experiência...</span>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+            
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const addExperienceBtn = document.getElementById("addExperienceBtn");
+            const addExperienceModal = document.getElementById("addExperienceModal");
+            const editExperienceModal = document.getElementById("editExperienceModal");
+
+            // Mostrar o modal de adicionar experiência
+            addExperienceBtn.addEventListener("click", function () {
+                openAddExperienceModal();
+            });
+
+            // Fechar o modal de adicionar experiência
+            window.closeAddExperienceModal = function () {
+                addExperienceModal.style.display = "none";
+                resetAddExperienceForm();
+            };
+
+            // Fechar o modal de editar experiência
+            window.closeEditExperienceModal = function () {
+                editExperienceModal.style.display = "none";
+                resetEditExperienceForm();
+            };
+
+            // Resetar o formulário de adicionar experiência
+            function resetAddExperienceForm() {
+                document.getElementById("addExperienceForm").reset();
+                document.getElementById("addTrabalhoAtual").checked = false;
+                document.getElementById("addEndDate").disabled = false;
+            }
+
+            // Resetar o formulário de editar experiência
+            function resetEditExperienceForm() {
+                document.getElementById("editExperienceForm").reset();
+                document.getElementById("editTrabalhoAtual").checked = false;
+                document.getElementById("editEndDate").disabled = false;
+            }
+
+            // Abrir o modal de adicionar experiência
+            window.openAddExperienceModal = function () {
+                addExperienceModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar experiência
+            window.openEditExperienceModal = function () {
+                editExperienceModal.style.display = "block";
+            };
+
+            // Lógica para o checkbox "Trabalho Atual" na modal de adicionar
+            document.getElementById("addTrabalhoAtual").addEventListener("change", function () {
+                const endDateInput = document.getElementById("addEndDate");
+                if (this.checked) {
+                    endDateInput.value = "";
+                    endDateInput.disabled = true;
+                } else {
+                    endDateInput.disabled = false;
+                }
+            });
+
+            // Lógica para o checkbox "Trabalho Atual" na modal de editar
+            document.getElementById("editTrabalhoAtual").addEventListener("change", function () {
+                const endDateInput = document.getElementById("editEndDate");
+                if (this.checked) {
+                    endDateInput.value = "";
+                    endDateInput.disabled = true;
+                } else {
+                    endDateInput.disabled = false;
+                }
+            });
+        });
+
+        // Lógica para adicionar experiência
+        document.getElementById("addExperienceForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addJobTitle").value.trim();
+            const empresa = document.getElementById("addCompany").value.trim();
+            const jornada = document.getElementById("addJornada").value.trim();
+            const dataInicio = document.getElementById("addStartDate").value.trim();
+            const dataFim = document.getElementById("addEndDate").value.trim();
+            const trabalhoAtual = document.getElementById("addTrabalhoAtual").checked ? "S" : "N";
+            const descricao = document.getElementById("addJobDescription").value.trim();
+
+            if (!titulo || !empresa || !jornada || !dataInicio || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios (Cargo, Empresa, Data de Início, Descrição).", "error");
+                return;
+            }
+
+            if (trabalhoAtual === "N" && !dataFim) {
+                showNotification("O campo Data de Término é obrigatório quando o trabalho não é o atual.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            const experiencia = {
+                TituloExperiencia: titulo,
+                NomeEmpresa: empresa,
+                Jornada: jornada,
+                DataInicioExperiencia: dataInicio,
+                DataFimExperiencia: trabalhoAtual === "S" ? "" : dataFim,
+                TrabalhoAtual: trabalhoAtual,
+                DescricaoExperiencia: descricao,
+            };
+
+            try {
+                const response = await fetch("/Experiencias/AdicionarExperiencia", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(experiencia)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar experiência: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar experiência
+        document.getElementById("editExperienceForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editExperienceId").value;
+            const titulo = document.getElementById("editJobTitle").value.trim();
+            const empresa = document.getElementById("editCompany").value.trim();
+            const jornada = document.getElementById("editJornada").value.trim();
+            const dataInicio = document.getElementById("editStartDate").value.trim();
+            const dataFim = document.getElementById("editEndDate").value.trim();
+            const trabalhoAtual = document.getElementById("editTrabalhoAtual").checked ? "S" : "N";
+            const descricao = document.getElementById("editJobDescription").value.trim();
+
+            if (!titulo || !empresa || !jornada || !dataInicio || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios (Cargo, Empresa, Data de Início, Descrição).", "error");
+                return;
+            }
+
+            if (trabalhoAtual === "N" && !dataFim) {
+                showNotification("O campo Data de Término é obrigatório quando o trabalho não é atual.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            const experiencia = {
+                IdExperiencia: id,
+                TituloExperiencia: titulo,
+                NomeEmpresa: empresa,
+                Jornada: jornada,
+                DataInicioExperiencia: dataInicio,
+                DataFimExperiencia: trabalhoAtual === "S" ? "" : dataFim,
+                TrabalhoAtual: trabalhoAtual,
+                DescricaoExperiencia: descricao,
+            };
+
+            try {
+                const response = await fetch("/Experiencias/EditarExperiencia", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(experiencia)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar experiência: " + err.message, "error");
+            }
+        });
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar experiências ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarExperiencias();
+        });
+
+        async function carregarExperiencias() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#experienceTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Experiencias/ObterExperiencias");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar experiências:", result.message);
+                    return;
+                }
+
+                result.experiencias.forEach(experiencia => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                        <td>${experiencia.tituloExperiencia}</td>
+                                        <td>${experiencia.nomeEmpresa}</td>
+                                        <td>${experiencia.jornada}</td>
+                                        <td>${experiencia.dataInicioExperiencia}</td>
+                                        <td>${experiencia.trabalhoAtual === "S" ? "Presente" : experiencia.dataFimExperiencia}</td>
+                                        <td>${experiencia.trabalhoAtual === "S" ? "Sim" : "Não"}</td>
+                                        <td>${experiencia.descricaoExperiencia}</td>
+                                        <td>
+                                            <button class="edit-btn" onclick="editarExperiencia('${experiencia.idExperiencia}')">✏️</button>
+                                            <button class="delete-btn" onclick="deletarExperiencia('${experiencia.idExperiencia}', '${experiencia.tituloExperiencia}')">🗑️</button>
+                                        </td>
+                                    `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar experiências:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+
+        // Função para editar experiência
+        window.editarExperiencia = function (idExperiencia) {
+            fetch("/Experiencias/ObterExperiencias")
+                .then(response => response.json())
+                .then(data => {
+                    const experiencia = data.experiencias.find(p => p.idExperiencia === idExperiencia);
+                    if (experiencia) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editExperienceId").value = experiencia.idExperiencia;
+                        document.getElementById("editJobTitle").value = experiencia.tituloExperiencia;
+                        document.getElementById("editCompany").value = experiencia.nomeEmpresa;
+                        document.getElementById("editJornada").value = experiencia.jornada;
+                        document.getElementById("editStartDate").value = experiencia.dataInicioExperiencia;
+                        document.getElementById("editEndDate").value = experiencia.dataFimExperiencia;
+                        document.getElementById("editTrabalhoAtual").checked = experiencia.trabalhoAtual === "S";
+                        document.getElementById("editJobDescription").value = experiencia.descricaoExperiencia;
+
+                        // Desabilita o campo DataFimExperiencia se for trabalho atual
+                        if (experiencia.trabalhoAtual === "S") {
+                            document.getElementById("editEndDate").disabled = true;
+                        }
+
+                        // Abre a modal de edição
+                        openEditExperienceModal();
+                    }
+                });
+        };
+    </script>
+
+    <script>
+        let experienciaParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarExperiencia = function (idExperiencia, tituloExperiencia) {
+            experienciaParaDeletar = idExperiencia;
+            document.getElementById("nomeExperienciaParaDeletar").textContent = tituloExperiencia;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            experienciaParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!experienciaParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Experiencias/DeletarExperiencia?idExperiencia=${experienciaParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir experiência: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir experiência: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializar Flatpickr para os campos de data
+            flatpickr("#addStartDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#addEndDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#editStartDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#editEndDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+        });
+    </script>
 }
