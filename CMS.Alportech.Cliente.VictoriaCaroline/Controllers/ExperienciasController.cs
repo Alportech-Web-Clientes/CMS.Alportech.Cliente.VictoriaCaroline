@@ -75,7 +75,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             experiencia.IdExperiencia = Guid.NewGuid().ToString();
             experiencia.DataCriacaoExperiencia = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbwtzvkoCCzmwfZsonw-E3-RKMEc9FCy93dCMvdzkZo4Od24DzTrj_0VGMkNvJ1DpkZdEw/exec";
+            var url = "https://script.google.com/macros/s/AKfycbyAPbubm_psYZZSp0IAS4USJ5cYIA8_HsoBHaK76pVlconnTxfFV7AaB4gDjThBaU28AQ/exec";
             var content = new StringContent(JsonConvert.SerializeObject(experiencia), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -96,7 +96,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Erro ao adicionar experiência.";
+                    TempData["ErrorMessage"] = "Erro ao adicionar experiência: {mensagem}";
                     return Json(new { success = false, message = result?.message ?? "Erro desconhecido" });
                 }
             }
@@ -163,6 +163,12 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
 
             experiencia.DataCriacaoExperiencia = experienciaOriginal.DataCriacaoExperiencia;
 
+            // 🔹 Mantém a imagem original caso nenhuma nova seja enviada
+            if (string.IsNullOrWhiteSpace(experiencia.ImagemExperienciaBase64))
+            {
+                experiencia.ImagemExperienciaBase64 = experienciaOriginal.ImagemExperienciaBase64;
+            }
+
             // 🔸 1 - Deleta experiência antiga
             var deletarUrl = "https://script.google.com/macros/s/AKfycbx2Oz2-b71bzrUOq1z9bgfPozKd7CaYW4SzoBq2yGu9r9OAXDW0Dj9QvVxngZugTg6_eA/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdExperiencia = experiencia.IdExperiencia }), Encoding.UTF8, "application/json");
@@ -174,7 +180,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔸 2 - Recria a experiência com as novas informações (usando mesmo IdExperiencia)
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbwtzvkoCCzmwfZsonw-E3-RKMEc9FCy93dCMvdzkZo4Od24DzTrj_0VGMkNvJ1DpkZdEw/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbyAPbubm_psYZZSp0IAS4USJ5cYIA8_HsoBHaK76pVlconnTxfFV7AaB4gDjThBaU28AQ/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(experiencia), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 

@@ -11,6 +11,7 @@
         public string? DataFimExperiencia { get; set; }
         public string? TrabalhoAtual { get; set; }
         public string? DescricaoExperiencia { get; set; }
+        public string? ImagemExperienciaBase64 { get; set; }
         public string? DataCriacaoExperiencia { get; set; }
     }
 }

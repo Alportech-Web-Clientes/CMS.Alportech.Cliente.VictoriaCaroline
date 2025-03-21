@@ -2,9 +2,6 @@
     ViewData["Title"] = "Experiências";
 }
 
-@section Styles {
-}
-
 <div class="page-header">
     <h1>Gerenciar Experiências</h1>
     <button class="add-btn" id="addExperienceBtn">Adicionar Experiência</button>
@@ -21,13 +18,19 @@
                 <th>DataFimExperiencia</th>
                 <th>TrabalhoAtual</th>
                 <th>DescricaoExperiencia</th>
+                <th>Imagem</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Experience items will be loaded here -->
         </tbody>
     </table>
+</div>
+
+<input type="hidden" id="editExperienciaExistingImage" name="editExperienciaExistingImage">
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
 </div>
 
 <!-- Add Experience Modal -->
@@ -48,10 +51,12 @@
                 <label for="addJornada">Jornada</label>
                 <input type="text" id="addJornada" placeholder="Ex: Tempo Integral, Meio Período.." required>
             </div>
+
             <div class="form-group">
                 <label for="addStartDate">Data de Início</label>
                 <input type="text" id="addStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
             </div>
+
             <div class="form-group">
                 <label for="addEndDate">Data de Término</label>
                 <div style="display: flex; justify-content: space-between; width: 100% !important; align-items: center; text-align: center;">
@@ -65,10 +70,22 @@
                     </div>
                 </div>
             </div>
+
             <div class="form-group">
                 <label for="addJobDescription">Descrição</label>
                 <textarea id="addJobDescription" rows="4" required></textarea>
             </div>
+
+            <div class="form-group">
+                <label for="addExperienciaImageUpload">Imagem da Experiência (opcional)</label>
+                <input type="file" id="addExperienciaImageUpload" accept="image/*">
+                <!-- Campo de pré-visualização da imagem com botão de remover -->
+                <div id="addExperienciaImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="addExperienciaImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
                 <button type="button" class="cancel-btn" onclick="closeAddExperienceModal()">Cancelar</button>
@@ -82,6 +99,7 @@
     <div class="modal-content">
         <span class="close-modal" onclick="closeEditExperienceModal()">&times;</span>
         <h2>Editar Experiência</h2>
+
         <form id="editExperienceForm">
             <input type="hidden" id="editExperienceId">
             <div class="form-group">
@@ -96,10 +114,12 @@
                 <label for="editJornada">Jornada</label>
                 <input type="text" id="editJornada" placeholder="Ex: Tempo Integral, Meio Período.." required>
             </div>
+
             <div class="form-group">
                 <label for="editStartDate">Data de Início</label>
                 <input type="text" id="editStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
             </div>
+
             <div class="form-group">
                 <label for="editEndDate">Data de Término</label>
                 <div style="display: flex; justify-content: space-between; width: 100% !important; align-items: center; text-align: center;">
@@ -113,9 +133,19 @@
                     </div>
                 </div>
             </div>
+
             <div class="form-group">
                 <label for="editJobDescription">Descrição</label>
                 <textarea id="editJobDescription" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="editExperienciaImageUpload">Imagem da Experiência (opcional)</label>
+                <input type="file" id="editExperienciaImageUpload" accept="image/*">
+                <div id="editExperienciaImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="editExperienciaImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeEditImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
@@ -123,10 +153,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div id="loading" style="display: none; text-align: center; margin: 20px;">
-    <span width="50"></span>
 </div>
 
 <!-- Modal de Confirmação de Exclusão -->
@@ -149,13 +175,12 @@
     </div>
 </div>
 
-
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
             var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
-            
+
             if (successMessage) {
                 showNotification(successMessage, "success");
             }
@@ -163,9 +188,7 @@
             if (errorMessage) {
                 showNotification(errorMessage, "error");
             }
-        });
 
-        document.addEventListener("DOMContentLoaded", function () {
             const addExperienceBtn = document.getElementById("addExperienceBtn");
             const addExperienceModal = document.getElementById("addExperienceModal");
             const editExperienceModal = document.getElementById("editExperienceModal");
@@ -192,6 +215,7 @@
                 document.getElementById("addExperienceForm").reset();
                 document.getElementById("addTrabalhoAtual").checked = false;
                 document.getElementById("addEndDate").disabled = false;
+                document.getElementById("addExperienciaImagePreview").src = "";
             }
 
             // Resetar o formulário de editar experiência
@@ -199,6 +223,7 @@
                 document.getElementById("editExperienceForm").reset();
                 document.getElementById("editTrabalhoAtual").checked = false;
                 document.getElementById("editEndDate").disabled = false;
+                document.getElementById("editExperienciaImagePreview").src = "";
             }
 
             // Abrir o modal de adicionar experiência
@@ -245,6 +270,8 @@
             const dataFim = document.getElementById("addEndDate").value.trim();
             const trabalhoAtual = document.getElementById("addTrabalhoAtual").checked ? "S" : "N";
             const descricao = document.getElementById("addJobDescription").value.trim();
+            const fileInput = document.getElementById("addExperienciaImageUpload");
+            const imagePreview = document.getElementById("editExperienciaImagePreview");
 
             if (!titulo || !empresa || !jornada || !dataInicio || !descricao) {
                 showNotification("Preencha todos os campos obrigatórios (Cargo, Empresa, Data de Início, Descrição).", "error");
@@ -258,6 +285,21 @@
 
             showLoadingOverlay();
 
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
+            } else {
+                imagemBase64 = imagemBase64.split(",")[1];
+            }
+
             const experiencia = {
                 TituloExperiencia: titulo,
                 NomeEmpresa: empresa,
@@ -266,6 +308,7 @@
                 DataFimExperiencia: trabalhoAtual === "S" ? "" : dataFim,
                 TrabalhoAtual: trabalhoAtual,
                 DescricaoExperiencia: descricao,
+                ImagemExperienciaBase64: imagemBase64,
             };
 
             try {
@@ -299,6 +342,8 @@
             const dataFim = document.getElementById("editEndDate").value.trim();
             const trabalhoAtual = document.getElementById("editTrabalhoAtual").checked ? "S" : "N";
             const descricao = document.getElementById("editJobDescription").value.trim();
+            const fileInput = document.getElementById("editExperienciaImageUpload");
+            const imagePreview = document.getElementById("editExperienciaImagePreview");
 
             if (!titulo || !empresa || !jornada || !dataInicio || !descricao) {
                 showNotification("Preencha todos os campos obrigatórios (Cargo, Empresa, Data de Início, Descrição).", "error");
@@ -312,6 +357,21 @@
 
             showLoadingOverlay();
 
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
+            } else {
+                imagemBase64 = imagemBase64.split(",")[1];
+            }
+
             const experiencia = {
                 IdExperiencia: id,
                 TituloExperiencia: titulo,
@@ -321,6 +381,7 @@
                 DataFimExperiencia: trabalhoAtual === "S" ? "" : dataFim,
                 TrabalhoAtual: trabalhoAtual,
                 DescricaoExperiencia: descricao,
+                ImagemExperienciaBase64: imagemBase64,
             };
 
             try {
@@ -341,79 +402,6 @@
                 showNotification("Erro ao editar experiência: " + err.message, "error");
             }
         });
-
-        // Funções auxiliares
-        function showLoadingOverlay() {
-            const overlay = document.createElement("div");
-            overlay.className = "loading-overlay";
-            overlay.innerHTML = '<div class="loading-spinner"></div>';
-            document.body.appendChild(overlay);
-        }
-
-        function hideLoadingOverlay() {
-            const overlay = document.querySelector(".loading-overlay");
-            if (overlay) {
-                overlay.remove();
-            }
-        }
-
-        function showNotification(message, type = "success") {
-            const notification = document.createElement("div");
-            notification.className = "notification-top-right";
-            notification.innerText = message;
-            if (type === "error") {
-                notification.classList.add("notification-error");
-            }
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
-        }
-
-        // Carregar experiências ao iniciar a página
-        document.addEventListener("DOMContentLoaded", async function () {
-            await carregarExperiencias();
-        });
-
-        async function carregarExperiencias() {
-            const loading = document.getElementById("loading");
-            const tbody = document.querySelector("#experienceTable tbody");
-
-            try {
-                loading.style.display = "block";
-                tbody.innerHTML = "";
-
-                const response = await fetch("/Experiencias/ObterExperiencias");
-                const result = await response.json();
-
-                if (!result.success) {
-                    console.error("Erro ao buscar experiências:", result.message);
-                    return;
-                }
-
-                result.experiencias.forEach(experiencia => {
-                    const row = document.createElement("tr");
-
-                    row.innerHTML = `
-                                        <td>${experiencia.tituloExperiencia}</td>
-                                        <td>${experiencia.nomeEmpresa}</td>
-                                        <td>${experiencia.jornada}</td>
-                                        <td>${experiencia.dataInicioExperiencia}</td>
-                                        <td>${experiencia.trabalhoAtual === "S" ? "Presente" : experiencia.dataFimExperiencia}</td>
-                                        <td>${experiencia.trabalhoAtual === "S" ? "Sim" : "Não"}</td>
-                                        <td>${experiencia.descricaoExperiencia}</td>
-                                        <td>
-                                            <button class="edit-btn" onclick="editarExperiencia('${experiencia.idExperiencia}')">✏️</button>
-                                            <button class="delete-btn" onclick="deletarExperiencia('${experiencia.idExperiencia}', '${experiencia.tituloExperiencia}')">🗑️</button>
-                                        </td>
-                                    `;
-
-                    tbody.appendChild(row);
-                });
-            } catch (err) {
-                console.error("Erro ao carregar experiências:", err);
-            } finally {
-                loading.style.display = "none";
-            }
-        }
 
         // Função para editar experiência
         window.editarExperiencia = function (idExperiencia) {
@@ -437,11 +425,89 @@
                             document.getElementById("editEndDate").disabled = true;
                         }
 
+                        // Exibe a imagem da Experiencia na pré-visualização
+                        const editExperienciaImagePreview = document.getElementById("editExperienciaImagePreview");
+                        const editExperienciaImagePreviewContainer = document.getElementById("editExperienciaImagePreviewContainer");
+
+                        if (experiencia.imagemExperienciaBase64) {
+                            editExperienciaImagePreview.src = `data:image/png;base64,${experiencia.imagemExperienciaBase64}`;
+                            editExperienciaImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+
+                            // Preenche o campo de upload com a imagem existente
+                            const editExperienciaImageUpload = document.getElementById("editExperienciaImageUpload");
+                            const file = base64ToFile(experiencia.imagemExperienciaBase64, "imagem_experiencia.png");
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            editExperienciaImageUpload.files = dataTransfer.files;
+                        } else {
+                            // Se não houver imagem, exibe a imagem padrão
+                            editExperienciaImagePreview.src = "/images/default_banner_projeto.jpg";
+                            editExperienciaImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                        }
+
                         // Abre a modal de edição
                         openEditExperienceModal();
                     }
                 });
         };
+
+        function base64ToFile(base64, filename) {
+            // Verifica se a string base64 já contém o prefixo
+            if (!base64.startsWith("data:")) {
+                // Adiciona o prefixo manualmente
+                base64 = `data:image/png;base64,${base64}`;
+            }
+
+            const arr = base64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        }
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar experiências ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarExperiencias();
+        });
     </script>
 
     <script>
@@ -496,6 +562,90 @@
             }
         }
 
+        // Atualizar a função de carregar experiencias para incluir o nome da experiencia no botão de exclusão
+        async function carregarExperiencias() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#experienceTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Experiencias/ObterExperiencias");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar experiências:", result.message);
+                    return;
+                }
+
+                result.experiencias.forEach(experiencia => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                                <td>${experiencia.tituloExperiencia}</td>
+                                                <td>${experiencia.nomeEmpresa}</td>
+                                                <td>${experiencia.jornada}</td>
+                                                <td>${experiencia.dataInicioExperiencia}</td>
+                                                <td>${experiencia.trabalhoAtual === "S" ? "Presente" : experiencia.dataFimExperiencia}</td>
+                                                <td>${experiencia.trabalhoAtual === "S" ? "Sim" : "Não"}</td>
+                                                <td>${experiencia.descricaoExperiencia}</td>
+                                                <td><img src="data:image/png;base64,${experiencia.imagemExperienciaBase64}" width="50"></td>
+                                                <td>
+                                                    <button class="edit-btn" onclick="editarExperiencia('${experiencia.idExperiencia}')">✏️</button>
+                                                    <button class="delete-btn" onclick="deletarExperiencia('${experiencia.idExperiencia}', '${experiencia.tituloExperiencia}')">🗑️</button>
+                                                </td>
+                                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar experiências:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addExperienciaImageUpload = document.getElementById("addExperienciaImageUpload");
+            const addExperienciaImagePreview = document.getElementById("addExperienciaImagePreview");
+            const addExperienciaImagePreviewContainer = document.getElementById("addExperienciaImagePreviewContainer");
+            const removeImageBtn = document.getElementById("removeImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            addExperienciaImageUpload.addEventListener("change", function () {
+                const file = addExperienciaImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        addExperienciaImagePreview.src = e.target.result;
+                        addExperienciaImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeImageBtn.addEventListener("click", function () {
+                resetImagePreview();
+            });
+
+            // Função para resetar a pré-visualização e o campo de upload
+            function resetImagePreview() {
+                addExperienciaImagePreview.src = "";
+                addExperienciaImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                addExperienciaImageUpload.value = ""; // Limpa o campo de upload
+            }
+
+            // Resetar a pré-visualização ao abrir a modal de adição
+            document.getElementById("addExperienceBtn").addEventListener("click", function () {
+                resetImagePreview();
+            });
+        });
     </script>
 
     <script>
@@ -520,6 +670,41 @@
                 dateFormat: "m/Y",
                 defaultDate: "",
             });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editExperienciaImageUpload = document.getElementById("editExperienciaImageUpload");
+            const editExperienciaImagePreview = document.getElementById("editExperienciaImagePreview");
+            const editExperienciaImagePreviewContainer = document.getElementById("editExperienciaImagePreviewContainer");
+            const removeEditImageBtn = document.getElementById("removeEditImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            editExperienciaImageUpload.addEventListener("change", function () {
+                const file = editExperienciaImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        editExperienciaImagePreview.src = e.target.result;
+                        editExperienciaImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetEditImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeEditImageBtn.addEventListener("click", function () {
+                resetEditImagePreview();
+            });
+
+            function resetEditImagePreview() {
+                editExperienciaImagePreview.src = "";
+                editExperienciaImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                editExperienciaImageUpload.value = ""; // Limpa o campo de upload
+            }
         });
     </script>
 }
