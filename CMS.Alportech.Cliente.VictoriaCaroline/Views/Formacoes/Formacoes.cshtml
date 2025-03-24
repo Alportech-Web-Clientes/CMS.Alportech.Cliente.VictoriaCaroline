@@ -3,68 +3,610 @@
 }
 
 <div class="page-header">
-    <h1>Gerenciar Formação</h1>
-    <button class="add-btn" id="addEducationBtn">Adicionar Formação</button>
+    <h1>Gerenciar Formações</h1>
+    <button class="add-btn" id="addFormacaoBtn">Adicionar Formação</button>
 </div>
 
 <div class="content-table">
-    <table id="educationTable">
+    <table id="formacaoTable">
         <thead>
             <tr>
-                <th>Curso</th>
-                <th>Instituição</th>
-                <th>Período</th>
+                <th>Título Formação</th>
+                <th>Nome Instituição</th>
+                <th>Data Início Formação</th>
+                <th>Data Fim Formação</th>
+                <th>Imagem</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Education items will be loaded here -->
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Education Modal -->
-<div id="educationModal" class="modal">
+<input type="hidden" id="editFormacaoExistingImage" name="editFormacaoExistingImage">
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add Formacao Modal -->
+<div id="addFormacaoModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="educationModalTitle">Adicionar Formação</h2>
-        <form id="educationForm">
-            <input type="hidden" id="educationId">
+        <span class="close-modal" onclick="closeAddFormacaoModal()">&times;</span>
+        <h2>Adicionar Formação</h2>
+        <form id="addFormacaoForm">
             <div class="form-group">
-                <label for="degree">Curso/Grau</label>
-                <input type="text" id="degree" required>
+                <label for="addFormacaoTitle">Título Formação</label>
+                <input type="text" id="addFormacaoTitle" required>
             </div>
             <div class="form-group">
-                <label for="institution">Instituição</label>
-                <input type="text" id="institution" required>
+                <label for="addCompany">Nome da Instituição</label>
+                <input type="text" id="addCompany" required>
             </div>
             <div class="form-group">
-                <label for="eduStartDate">Ano de Início</label>
-                <input type="text" id="eduStartDate" placeholder="Ex: 2016" required>
+                <label for="addStartDate">Data de Início</label>
+                <input type="text" id="addStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
             </div>
+
             <div class="form-group">
-                <label for="eduEndDate">Ano de Conclusão</label>
-                <input type="text" id="eduEndDate" placeholder="Ex: 2020 ou Presente">
+                <label for="addEndDate">Data de Término</label>
+                <input type="text" id="addEndDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y">
             </div>
+
             <div class="form-group">
-                <label for="eduDescription">Descrição</label>
-                <textarea id="eduDescription" rows="4"></textarea>
+                <label for="addFormacaoImageUpload">Imagem da Formação (opcional)</label>
+                <input type="file" id="addFormacaoImageUpload" accept="image/*">
+                <!-- Campo de pré-visualização da imagem com botão de remover -->
+                <div id="addFormacaoImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="addFormacaoImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="eduType">Tipo</label>
-                <select id="eduType" required>
-                    <option value="academic">Formação Acadêmica</option>
-                    <option value="certification">Certificação/Curso</option>
-                </select>
-            </div>
+
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
-                <button type="button" class="cancel-btn">Cancelar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddFormacaoModal()">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
-@section Scripts {
+<!-- Edit Formacao Modal -->
+<div id="editFormacaoModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditFormacaoModal()">&times;</span>
+        <h2>Editar Formação</h2>
 
+        <form id="editFormacaoForm">
+            <input type="hidden" id="editFormacaoId">
+            <div class="form-group">
+                <label for="editFormacaoTitle">Título Formação</label>
+                <input type="text" id="editFormacaoTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="editCompany">Nome da Instituição</label>
+                <input type="text" id="editCompany" required>
+            </div>
+            <div class="form-group">
+                <label for="editStartDate">Data de Início</label>
+                <input type="text" id="editStartDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editEndDate">Data de Término</label>
+                <input type="text" id="editEndDate" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y">
+            </div>
+
+            <div class="form-group">
+                <label for="editFormacaoImageUpload">Imagem da Formação (opcional)</label>
+                <input type="file" id="editFormacaoImageUpload" accept="image/*">
+                <div id="editFormacaoImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="editFormacaoImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeEditImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditFormacaoModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir a formação "<span id="nomeFormacaoParaDeletar"></span>"?</p>
+
+        <!-- Adicionando o indicador de carregamento e mensagem -->
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo formação...</span>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            const addFormacaoBtn = document.getElementById("addFormacaoBtn");
+            const addFormacaoModal = document.getElementById("addFormacaoModal");
+            const editFormacaoModal = document.getElementById("editFormacaoModal");
+
+            // Mostrar o modal de adicionar formação
+            addFormacaoBtn.addEventListener("click", function () {
+                openaddFormacaoModal();
+            });
+
+            // Fechar o modal de adicionar formação
+            window.closeAddFormacaoModal = function () {
+                addFormacaoModal.style.display = "none";
+                resetaddFormacaoForm();
+            };
+
+            // Fechar o modal de editar formação
+            window.closeEditFormacaoModal = function () {
+                editFormacaoModal.style.display = "none";
+                resetEditFormacaoForm();
+            };
+
+            // Resetar o formulário de adicionar formação
+            function resetaddFormacaoForm() {
+                document.getElementById("addFormacaoForm").reset();
+                document.getElementById("addEndDate").disabled = false;
+                document.getElementById("addFormacaoImagePreview").src = "";
+            }
+
+            // Resetar o formulário de editar formação
+            function resetEditFormacaoForm() {
+                document.getElementById("editFormacaoForm").reset();
+                document.getElementById("editEndDate").disabled = false;
+                document.getElementById("editFormacaoImagePreview").src = "";
+            }
+
+            // Abrir o modal de adicionar formação
+            window.openaddFormacaoModal = function () {
+                addFormacaoModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar formação
+            window.openeditFormacaoModal = function () {
+                editFormacaoModal.style.display = "block";
+            };
+        });
+
+        // Lógica para adicionar formação
+        document.getElementById("addFormacaoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addFormacaoTitle").value.trim();
+            const instituicao = document.getElementById("addCompany").value.trim();
+            const dataInicio = document.getElementById("addStartDate").value.trim();
+            const dataFim = document.getElementById("addEndDate").value.trim();
+            const fileInput = document.getElementById("addFormacaoImageUpload");
+            const imagePreview = document.getElementById("addFormacaoImagePreview");
+
+            if (!titulo || !instituicao || !dataInicio || !dataFim) {
+                showNotification("Preencha todos os campos obrigatórios (Títutlo, Instituição, Data de Início, Data Fim).", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
+            } else {
+                imagemBase64 = imagemBase64.split(",")[1];
+            }
+
+            const formacao = {
+                TituloFormacao: titulo,
+                NomeInstituicao: instituicao,
+                DataInicioFormacao: dataInicio,
+                DataFimFormacao: dataFim,
+                ImagemFormacaoBase64: imagemBase64,
+            };
+
+            try {
+                const response = await fetch("/Formacoes/AdicionarFormacao", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formacao)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar formação: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar formação
+        document.getElementById("editFormacaoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editFormacaoId").value;
+            const titulo = document.getElementById("editFormacaoTitle").value.trim();
+            const instituicao = document.getElementById("editCompany").value.trim();
+            const dataInicio = document.getElementById("editStartDate").value.trim();
+            const dataFim = document.getElementById("editEndDate").value.trim();
+            const fileInput = document.getElementById("editFormacaoImageUpload");
+            const imagePreview = document.getElementById("editFormacaoImagePreview");
+
+            if (!titulo || !instituicao || !dataInicio || !dataFim) {
+                showNotification("Preencha todos os campos obrigatórios (Títutlo, Instituição, Data de Início, Data Fim).", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            if (!imagemBase64) {
+                const defaultImgPath = "/images/default_banner_projeto.jpg";
+                imagemBase64 = await fetch(defaultImgPath)
+                    .then(res => res.blob())
+                    .then(blob => new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                        reader.readAsDataURL(blob);
+                    }));
+            } else {
+                imagemBase64 = imagemBase64.split(",")[1];
+            }
+
+            const formacao = {
+                IdFormacao: id,
+                TituloFormacao: titulo,
+                NomeInstituicao: instituicao,
+                DataInicioFormacao: dataInicio,
+                DataFimFormacao: dataFim,
+                ImagemFormacaoBase64: imagemBase64,
+            };
+
+            try {
+                const response = await fetch("/Formacoes/EditarFormacao", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formacao)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar formação: " + err.message, "error");
+            }
+        });
+
+        // Função para editar formação
+        window.editarFormacao = function (idFormacao) {
+            fetch("/Formacoes/ObterFormacoes")
+                .then(response => response.json())
+                .then(data => {
+                    const formacao = data.formacoes.find(p => p.idFormacao === idFormacao);
+                    if (formacao) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editFormacaoId").value = formacao.idFormacao;
+                        document.getElementById("editFormacaoTitle").value = formacao.tituloFormacao;
+                        document.getElementById("editCompany").value = formacao.nomeInstituicao;
+                        document.getElementById("editStartDate").value = formacao.dataInicioFormacao;
+                        document.getElementById("editEndDate").value = formacao.dataFimFormacao;
+
+                        // Exibe a imagem da formação na pré-visualização
+                        const editFormacaoImagePreview = document.getElementById("editFormacaoImagePreview");
+                        const editFormacaoImagePreviewContainer = document.getElementById("editFormacaoImagePreviewContainer");
+
+                        if (formacao.imagemFormacaoBase64) {
+                            editFormacaoImagePreview.src = `data:image/png;base64,${formacao.imagemFormacaoBase64}`;
+                            editFormacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+
+                            // Preenche o campo de upload com a imagem existente
+                            const editFormacaoImageUpload = document.getElementById("editFormacaoImageUpload");
+                            const file = base64ToFile(formacao.imagemFormacaoBase64, "imagem_formacao.png");
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            editFormacaoImageUpload.files = dataTransfer.files;
+                        } else {
+                            // Se não houver imagem, exibe a imagem padrão
+                            editFormacaoImagePreview.src = "/images/default_banner_projeto.jpg";
+                            editFormacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                        }
+
+                        // Abre a modal de edição
+                        openeditFormacaoModal();
+                    }
+                });
+        };
+
+        function base64ToFile(base64, filename) {
+            // Verifica se a string base64 já contém o prefixo
+            if (!base64.startsWith("data:")) {
+                // Adiciona o prefixo manualmente
+                base64 = `data:image/png;base64,${base64}`;
+            }
+
+            const arr = base64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        }
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar formaçãos ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarFormacoes();
+        });
+    </script>
+
+    <script>
+        let formacaoParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarFormacao = function (idFormacao, tituloFormacao) {
+            formacaoParaDeletar = idFormacao;
+            document.getElementById("nomeFormacaoParaDeletar").textContent = tituloFormacao;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            formacaoParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!formacaoParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Formacoes/DeletarFormacao?idFormacao=${formacaoParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir formação: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir formação: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar formações para incluir o nome da formação no botão de exclusão
+        async function carregarFormacoes() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#formacaoTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Formacoes/ObterFormacoes");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar formaçãos:", result.message);
+                    return;
+                }
+
+                result.formacoes.forEach(formacao => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                                                <td>${formacao.tituloFormacao}</td>
+                                                                <td>${formacao.nomeInstituicao}</td>
+                                                                <td>${formacao.dataInicioFormacao}</td>
+                                                                <td>${formacao.dataFimFormacao}</td>
+                                                                <td><img src="data:image/png;base64,${formacao.imagemFormacaoBase64}" width="50"></td>
+                                                                <td>
+                                                                    <button class="edit-btn" onclick="editarFormacao('${formacao.idFormacao}')">✏️</button>
+                                                                    <button class="delete-btn" onclick="deletarFormacao('${formacao.idFormacao}', '${formacao.tituloFormacao}')">🗑️</button>
+                                                                </td>
+                                                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar formaçãos:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addFormacaoImageUpload = document.getElementById("addFormacaoImageUpload");
+            const addFormacaoImagePreview = document.getElementById("addFormacaoImagePreview");
+            const addFormacaoImagePreviewContainer = document.getElementById("addFormacaoImagePreviewContainer");
+            const removeImageBtn = document.getElementById("removeImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            addFormacaoImageUpload.addEventListener("change", function () {
+                const file = addFormacaoImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        addFormacaoImagePreview.src = e.target.result;
+                        addFormacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeImageBtn.addEventListener("click", function () {
+                resetImagePreview();
+            });
+
+            // Função para resetar a pré-visualização e o campo de upload
+            function resetImagePreview() {
+                addFormacaoImagePreview.src = "";
+                addFormacaoImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                addFormacaoImageUpload.value = ""; // Limpa o campo de upload
+            }
+
+            // Resetar a pré-visualização ao abrir a modal de adição
+            document.getElementById("addFormacaoBtn").addEventListener("click", function () {
+                resetImagePreview();
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializar Flatpickr para os campos de data
+            flatpickr("#addStartDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#addEndDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#editStartDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#editEndDate", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editFormacaoImageUpload = document.getElementById("editFormacaoImageUpload");
+            const editFormacaoImagePreview = document.getElementById("editFormacaoImagePreview");
+            const editFormacaoImagePreviewContainer = document.getElementById("editFormacaoImagePreviewContainer");
+            const removeEditImageBtn = document.getElementById("removeEditImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            editFormacaoImageUpload.addEventListener("change", function () {
+                const file = editFormacaoImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        editFormacaoImagePreview.src = e.target.result;
+                        editFormacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetEditImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeEditImageBtn.addEventListener("click", function () {
+                resetEditImagePreview();
+            });
+
+            function resetEditImagePreview() {
+                editFormacaoImagePreview.src = "";
+                editFormacaoImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                editFormacaoImageUpload.value = ""; // Limpa o campo de upload
+            }
+        });
+    </script>
 }
