@@ -2,6 +2,86 @@
     ViewData["Title"] = "Stories";
 }
 
+<style>
+    .images-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .image-preview-item {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        padding: 5px;
+    }
+
+        .image-preview-item img {
+            max-width: 100px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+
+    .image-actions {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .remove-image-btn, .move-up-btn, .move-down-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+
+    .remove-image-btn {
+        color: red;
+    }
+
+    .move-up-btn {
+        color: #2196F3;
+    }
+
+    .move-down-btn {
+        color: #4CAF50;
+    }
+
+    .file-input-container {
+        position: relative;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border: 1px dashed #ccc;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+        .file-input-label:hover {
+            background: #e0e0e0;
+        }
+</style>
+
 <div class="page-header">
     <h1>Gerenciar Stories</h1>
     <button class="add-btn" id="addStoryBtn">Adicionar Story</button>
@@ -46,9 +126,12 @@
                 <textarea id="addDescription" rows="4" required></textarea>
             </div>
             <div class="form-group">
-                <label for="addImagesUpload">Imagens (pelo menos 1)</label>
-                <input type="file" id="addImagesUpload" accept="image/*" multiple>
-                <div id="addImagesPreviewContainer" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                <label>Imagens (pelo menos 1)</label>
+                <div class="file-input-container">
+                    <label for="addImagesUpload" class="file-input-label">Clique para adicionar imagens</label>
+                    <input type="file" id="addImagesUpload" accept="image/*" multiple style="display: none;">
+                </div>
+                <div id="addImagesPreviewContainer" class="images-preview-container"></div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
@@ -78,9 +161,12 @@
                 <textarea id="editDescription" rows="4" required></textarea>
             </div>
             <div class="form-group">
-                <label for="editImagesUpload">Imagens (pelo menos 1)</label>
-                <input type="file" id="editImagesUpload" accept="image/*" multiple>
-                <div id="editImagesPreviewContainer" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                <label>Imagens (pelo menos 1)</label>
+                <div class="file-input-container">
+                    <label for="editImagesUpload" class="file-input-label">Clique para adicionar mais imagens</label>
+                    <input type="file" id="editImagesUpload" accept="image/*" multiple style="display: none;">
+                </div>
+                <div id="editImagesPreviewContainer" class="images-preview-container"></div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
@@ -109,6 +195,9 @@
 
 @section Scripts {
     <script>
+        // Variável global para armazenar as imagens existentes durante a edição
+        let existingImages = [];
+
         document.addEventListener("DOMContentLoaded", function () {
             var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
             var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
@@ -152,6 +241,7 @@
             function resetEditStoryForm() {
                 document.getElementById("editStoryForm").reset();
                 document.getElementById("editImagesPreviewContainer").innerHTML = "";
+                existingImages = [];
             }
 
             // Abrir o modal de adicionar story
@@ -167,95 +257,123 @@
             // Lógica para upload de múltiplas imagens na modal de adição
             document.getElementById("addImagesUpload").addEventListener("change", function () {
                 const previewContainer = document.getElementById("addImagesPreviewContainer");
-                previewContainer.innerHTML = "";
 
+                // Não limpar o container, apenas adicionar novas imagens
                 Array.from(this.files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        const imgContainer = document.createElement("div");
-                        imgContainer.style.position = "relative";
-                        imgContainer.style.width = "100px";
-
-                        const img = document.createElement("img");
-                        img.src = e.target.result;
-                        img.style.maxWidth = "100px";
-                        img.style.maxHeight = "100px";
-
-                        const removeBtn = document.createElement("button");
-                        removeBtn.innerHTML = "✖";
-                        removeBtn.style.position = "absolute";
-                        removeBtn.style.top = "0";
-                        removeBtn.style.right = "0";
-                        removeBtn.style.background = "red";
-                        removeBtn.style.color = "white";
-                        removeBtn.style.border = "none";
-                        removeBtn.style.borderRadius = "50%";
-                        removeBtn.style.cursor = "pointer";
-
-                        removeBtn.addEventListener("click", function () {
-                            imgContainer.remove();
-                            // Atualizar o input de arquivos
-                            const dataTransfer = new DataTransfer();
-                            Array.from(document.getElementById("addImagesUpload").files)
-                                .filter(f => f !== file)
-                                .forEach(f => dataTransfer.items.add(f));
-                            document.getElementById("addImagesUpload").files = dataTransfer.files;
-                        });
-
-                        imgContainer.appendChild(img);
-                        imgContainer.appendChild(removeBtn);
-                        previewContainer.appendChild(imgContainer);
+                        addImageToPreview(previewContainer, e.target.result, file);
                     };
                     reader.readAsDataURL(file);
                 });
+
+                // Limpar o input para permitir adicionar mais arquivos
+                this.value = '';
             });
 
             // Lógica para upload de múltiplas imagens na modal de edição
             document.getElementById("editImagesUpload").addEventListener("change", function () {
                 const previewContainer = document.getElementById("editImagesPreviewContainer");
-                previewContainer.innerHTML = "";
 
                 Array.from(this.files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        const imgContainer = document.createElement("div");
-                        imgContainer.style.position = "relative";
-                        imgContainer.style.width = "100px";
-
-                        const img = document.createElement("img");
-                        img.src = e.target.result;
-                        img.style.maxWidth = "100px";
-                        img.style.maxHeight = "100px";
-
-                        const removeBtn = document.createElement("button");
-                        removeBtn.innerHTML = "✖";
-                        removeBtn.style.position = "absolute";
-                        removeBtn.style.top = "0";
-                        removeBtn.style.right = "0";
-                        removeBtn.style.background = "red";
-                        removeBtn.style.color = "white";
-                        removeBtn.style.border = "none";
-                        removeBtn.style.borderRadius = "50%";
-                        removeBtn.style.cursor = "pointer";
-
-                        removeBtn.addEventListener("click", function () {
-                            imgContainer.remove();
-                            // Atualizar o input de arquivos
-                            const dataTransfer = new DataTransfer();
-                            Array.from(document.getElementById("editImagesUpload").files)
-                                .filter(f => f !== file)
-                                .forEach(f => dataTransfer.items.add(f));
-                            document.getElementById("editImagesUpload").files = dataTransfer.files;
-                        });
-
-                        imgContainer.appendChild(img);
-                        imgContainer.appendChild(removeBtn);
-                        previewContainer.appendChild(imgContainer);
+                        addImageToPreview(previewContainer, e.target.result, file);
                     };
                     reader.readAsDataURL(file);
                 });
+
+                // Limpar o input para permitir adicionar mais arquivos
+                this.value = '';
             });
         });
+
+        // Função para adicionar uma imagem ao preview
+        function addImageToPreview(container, imageSrc, file) {
+            const imageId = 'img-' + Math.random().toString(36).substr(2, 9);
+            const imgContainer = document.createElement("div");
+            imgContainer.className = "image-preview-item";
+            imgContainer.dataset.id = imageId;
+
+            const img = document.createElement("img");
+            img.src = imageSrc;
+
+            const actionsDiv = document.createElement("div");
+            actionsDiv.className = "image-actions";
+
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "remove-image-btn";
+            removeBtn.innerHTML = "✖ Remover";
+            removeBtn.title = "Remover imagem";
+            removeBtn.type = "button"; 
+
+            const moveUpBtn = document.createElement("button");
+            moveUpBtn.className = "move-up-btn";
+            moveUpBtn.innerHTML = "↑";
+            moveUpBtn.title = "Mover para cima";
+            moveUpBtn.type = "button";
+
+            const moveDownBtn = document.createElement("button");
+            moveDownBtn.className = "move-down-btn";
+            moveDownBtn.innerHTML = "↓";
+            moveDownBtn.title = "Mover para baixo";
+            moveDownBtn.type = "button";
+
+            // Event listeners
+            removeBtn.addEventListener("click", function () {
+                imgContainer.remove();
+                updateFileInput(container.id === 'addImagesPreviewContainer' ? 'addImagesUpload' : 'editImagesUpload');
+            });
+
+            moveUpBtn.addEventListener("click", function () {
+                const prev = imgContainer.previousElementSibling;
+                if (prev) {
+                    imgContainer.parentNode.insertBefore(imgContainer, prev);
+                }
+            });
+
+            moveDownBtn.addEventListener("click", function () {
+                const next = imgContainer.nextElementSibling;
+                if (next) {
+                    imgContainer.parentNode.insertBefore(next, imgContainer);
+                }
+            });
+
+            actionsDiv.appendChild(moveUpBtn);
+            actionsDiv.appendChild(moveDownBtn);
+            actionsDiv.appendChild(removeBtn);
+
+            imgContainer.appendChild(img);
+            imgContainer.appendChild(actionsDiv);
+            container.appendChild(imgContainer);
+
+            // Se for uma imagem existente (não de arquivo), armazena o base64
+            if (!file) {
+                imgContainer.dataset.base64 = imageSrc.split(',')[1];
+            }
+        }
+
+        // Atualiza o input de arquivos após remover uma imagem
+        function updateFileInput(inputId) {
+            const input = document.getElementById(inputId);
+            const previewContainer = inputId === 'addImagesUpload' ?
+                document.getElementById('addImagesPreviewContainer') :
+                document.getElementById('editImagesPreviewContainer');
+
+            const dataTransfer = new DataTransfer();
+
+            // Para o modal de adição, precisamos manter apenas as imagens de arquivo
+            if (inputId === 'addImagesUpload') {
+                const fileInput = document.getElementById('addImagesUpload');
+                if (fileInput.files.length > 0) {
+                    Array.from(fileInput.files).forEach(file => {
+                        dataTransfer.items.add(file);
+                    });
+                }
+            }
+
+            input.files = dataTransfer.files;
+        }
 
         // Lógica para adicionar story
         document.getElementById("addStoryForm").addEventListener("submit", async function (e) {
@@ -266,8 +384,17 @@
             const description = document.getElementById("addDescription").value.trim();
             const files = document.getElementById("addImagesUpload").files;
 
-            if (!label || !title || !description || files.length === 0) {
-                showNotification("Preencha todos os campos obrigatórios e adicione pelo menos uma imagem.", "error");
+            if (!label || !title || !description) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            // Verificar se há pelo menos uma imagem (arquivo ou preview)
+            const previewContainer = document.getElementById("addImagesPreviewContainer");
+            const hasImages = previewContainer.children.length > 0 || files.length > 0;
+
+            if (!hasImages) {
+                showNotification("Adicione pelo menos uma imagem.", "error");
                 return;
             }
 
@@ -275,15 +402,29 @@
 
             try {
                 // Converter imagens para base64
-                const imagesBase64 = await Promise.all(
-                    Array.from(files).map(file => getBase64FromFile(file))
-                );
+                const imagesBase64 = [];
+
+                // Primeiro adiciona as imagens dos arquivos
+                if (files.length > 0) {
+                    const fileImages = await Promise.all(
+                        Array.from(files).map(file => getBase64FromFile(file))
+                    );
+                    fileImages.forEach(img => imagesBase64.push(img.split(",")[1]));
+                }
+
+                // Depois adiciona as imagens já no preview (caso existam)
+                const previewImages = previewContainer.querySelectorAll('img');
+                previewImages.forEach(img => {
+                    if (img.src.startsWith('data:')) {
+                        imagesBase64.push(img.src.split(',')[1]);
+                    }
+                });
 
                 const story = {
                     LabelStorie: label,
                     TituloStorie: title,
                     DescricaoStorie: description,
-                    ImagensStorieBase64: imagesBase64.map(img => img.split(",")[1])
+                    ImagensStorieBase64: imagesBase64
                 };
 
                 const response = await fetch("/Stories/AdicionarStorie", {
@@ -306,6 +447,41 @@
             }
         });
 
+        // Função para editar story
+        window.editarStory = function (idStorie) {
+            fetch("/Stories/ObterStories")
+                .then(response => response.json())
+                .then(data => {
+                    const story = data.stories.find(p => p.idStorie === idStorie);
+                    if (story) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editStoryId").value = story.idStorie;
+                        document.getElementById("editLabel").value = story.labelStorie;
+                        document.getElementById("editTitle").value = story.tituloStorie;
+                        document.getElementById("editDescription").value = story.descricaoStorie;
+
+                        // Exibe as imagens do story na pré-visualização
+                        const previewContainer = document.getElementById("editImagesPreviewContainer");
+                        previewContainer.innerHTML = "";
+                        existingImages = [];
+
+                        if (story.imagensStorieBase64 && story.imagensStorieBase64.length > 0) {
+                            story.imagensStorieBase64.forEach((imgBase64, index) => {
+                                existingImages.push(imgBase64);
+                                addImageToPreview(
+                                    previewContainer,
+                                    `data:image/png;base64,${imgBase64}`,
+                                    null
+                                );
+                            });
+                        }
+
+                        // Abre a modal de edição
+                        openEditStoryModal();
+                    }
+                });
+        };
+
         // Lógica para editar story
         document.getElementById("editStoryForm").addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -326,16 +502,21 @@
             try {
                 let imagesBase64 = [];
 
-                // Se novas imagens foram adicionadas, usa elas
-                if (files.length > 0) {
-                    imagesBase64 = await Promise.all(
-                        Array.from(files).map(file => getBase64FromFile(file))
-                    );
-                    imagesBase64 = imagesBase64.map(img => img.split(",")[1]);
-                } else {
-                    // Se não, mantém as imagens existentes
-                    const existingImages = document.querySelectorAll("#editImagesPreviewContainer img[data-base64]");
-                    imagesBase64 = Array.from(existingImages).map(img => img.getAttribute("data-base64"));
+                // Obter imagens na ordem atual (incluindo as existentes e novas)
+                const previewContainer = document.getElementById("editImagesPreviewContainer");
+                const imageItems = previewContainer.querySelectorAll('.image-preview-item');
+
+                for (const item of imageItems) {
+                    if (item.dataset.base64) {
+                        // Imagem existente
+                        imagesBase64.push(item.dataset.base64);
+                    } else {
+                        // Nova imagem (de arquivo)
+                        const img = item.querySelector('img');
+                        if (img && img.src.startsWith('data:')) {
+                            imagesBase64.push(img.src.split(',')[1]);
+                        }
+                    }
                 }
 
                 if (imagesBase64.length === 0) {
@@ -371,62 +552,6 @@
                 showNotification("Erro ao editar story: " + err.message, "error");
             }
         });
-
-        // Função para editar story
-        window.editarStory = function (idStorie) {
-            fetch("/Stories/ObterStories")
-                .then(response => response.json())
-                .then(data => {
-                    const story = data.stories.find(p => p.idStorie === idStorie);
-                    if (story) {
-                        // Preenche os campos do formulário de edição
-                        document.getElementById("editStoryId").value = story.idStorie;
-                        document.getElementById("editLabel").value = story.labelStorie;
-                        document.getElementById("editTitle").value = story.tituloStorie;
-                        document.getElementById("editDescription").value = story.descricaoStorie;
-
-                        // Exibe as imagens do story na pré-visualização
-                        const previewContainer = document.getElementById("editImagesPreviewContainer");
-                        previewContainer.innerHTML = "";
-
-                        if (story.imagensStorieBase64 && story.imagensStorieBase64.length > 0) {
-                            story.imagensStorieBase64.forEach((imgBase64, index) => {
-                                const imgContainer = document.createElement("div");
-                                imgContainer.style.position = "relative";
-                                imgContainer.style.width = "100px";
-
-                                const img = document.createElement("img");
-                                img.src = `data:image/png;base64,${imgBase64}`;
-                                img.setAttribute("data-base64", imgBase64);
-                                img.style.maxWidth = "100px";
-                                img.style.maxHeight = "100px";
-
-                                const removeBtn = document.createElement("button");
-                                removeBtn.innerHTML = "✖";
-                                removeBtn.style.position = "absolute";
-                                removeBtn.style.top = "0";
-                                removeBtn.style.right = "0";
-                                removeBtn.style.background = "red";
-                                removeBtn.style.color = "white";
-                                removeBtn.style.border = "none";
-                                removeBtn.style.borderRadius = "50%";
-                                removeBtn.style.cursor = "pointer";
-
-                                removeBtn.addEventListener("click", function () {
-                                    imgContainer.remove();
-                                });
-
-                                imgContainer.appendChild(img);
-                                imgContainer.appendChild(removeBtn);
-                                previewContainer.appendChild(imgContainer);
-                            });
-                        }
-
-                        // Abre a modal de edição
-                        openEditStoryModal();
-                    }
-                });
-        };
 
         // Funções auxiliares
         function showLoadingOverlay() {
