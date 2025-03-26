@@ -47,6 +47,18 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Services
             return usuarios;
         }
 
+        //public async Task<List<T>> ObterDadosDaAba<T>(string aba)
+        //{
+        //    var url = $"{_urlAba}{aba}";
+        //    var response = await _httpClient.GetAsync(url);
+        //    response.EnsureSuccessStatusCode();
+
+        //    using var stream = await response.Content.ReadAsStreamAsync();
+        //    using var reader = new StreamReader(stream);
+        //    using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
+        //    return csv.GetRecords<T>().ToList();
+        //}
+
         public async Task<List<T>> ObterDadosDaAba<T>(string aba)
         {
             var url = $"{_urlAba}{aba}";
@@ -55,9 +67,33 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Services
 
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
+
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                PrepareHeaderForMatch = args => args.Header.ToLower(),
+            };
+
+            using var csv = new CsvReader(reader, config);
+
+            // Configuração específica para o tipo Story
+            if (typeof(T) == typeof(Story))
+            {
+                csv.Context.RegisterClassMap<StoryMap>();
+            }
+
             return csv.GetRecords<T>().ToList();
         }
+
+        // Classe de mapeamento para Story
+        public sealed class StoryMap : ClassMap<Story>
+        {
+            public StoryMap()
+            {
+                AutoMap(CultureInfo.InvariantCulture);
+                Map(m => m.ImagensStorieBase64).TypeConverter<StringToListConverter>();
+            }
+        }
+
 
         public async Task CriarUsuario(string nome, string email, string senha, string fotoPerfil)
         {

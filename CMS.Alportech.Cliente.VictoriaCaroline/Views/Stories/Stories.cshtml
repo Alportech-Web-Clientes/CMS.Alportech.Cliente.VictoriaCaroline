@@ -1,0 +1,570 @@
+﻿@{
+    ViewData["Title"] = "Stories";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Stories</h1>
+    <button class="add-btn" id="addStoryBtn">Adicionar Story</button>
+</div>
+
+<div class="content-table">
+    <table id="storyTable">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Título</th>
+                <th>Descrição</th>
+                <th>Imagens</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add Story Modal -->
+<div id="addStoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAddStoryModal()">&times;</span>
+        <h2>Adicionar Story</h2>
+        <form id="addStoryForm">
+            <div class="form-group">
+                <label for="addLabel">Label</label>
+                <input type="text" id="addLabel" required>
+            </div>
+            <div class="form-group">
+                <label for="addTitle">Título</label>
+                <input type="text" id="addTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="addDescription">Descrição</label>
+                <textarea id="addDescription" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="addImagesUpload">Imagens (pelo menos 1)</label>
+                <input type="file" id="addImagesUpload" accept="image/*" multiple>
+                <div id="addImagesPreviewContainer" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddStoryModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Story Modal -->
+<div id="editStoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditStoryModal()">&times;</span>
+        <h2>Editar Story</h2>
+        <form id="editStoryForm">
+            <input type="hidden" id="editStoryId">
+            <div class="form-group">
+                <label for="editLabel">Label</label>
+                <input type="text" id="editLabel" required>
+            </div>
+            <div class="form-group">
+                <label for="editTitle">Título</label>
+                <input type="text" id="editTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="editDescription">Descrição</label>
+                <textarea id="editDescription" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="editImagesUpload">Imagens (pelo menos 1)</label>
+                <input type="file" id="editImagesUpload" accept="image/*" multiple>
+                <div id="editImagesPreviewContainer" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditStoryModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir o story "<span id="nomeStoryParaDeletar"></span>"?</p>
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo story...</span>
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            const addStoryBtn = document.getElementById("addStoryBtn");
+            const addStoryModal = document.getElementById("addStoryModal");
+            const editStoryModal = document.getElementById("editStoryModal");
+
+            // Mostrar o modal de adicionar story
+            addStoryBtn.addEventListener("click", function () {
+                openAddStoryModal();
+            });
+
+            // Fechar o modal de adicionar story
+            window.closeAddStoryModal = function () {
+                addStoryModal.style.display = "none";
+                resetAddStoryForm();
+            };
+
+            // Fechar o modal de editar story
+            window.closeEditStoryModal = function () {
+                editStoryModal.style.display = "none";
+                resetEditStoryForm();
+            };
+
+            // Resetar o formulário de adicionar story
+            function resetAddStoryForm() {
+                document.getElementById("addStoryForm").reset();
+                document.getElementById("addImagesPreviewContainer").innerHTML = "";
+            }
+
+            // Resetar o formulário de editar story
+            function resetEditStoryForm() {
+                document.getElementById("editStoryForm").reset();
+                document.getElementById("editImagesPreviewContainer").innerHTML = "";
+            }
+
+            // Abrir o modal de adicionar story
+            window.openAddStoryModal = function () {
+                addStoryModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar story
+            window.openEditStoryModal = function () {
+                editStoryModal.style.display = "block";
+            };
+
+            // Lógica para upload de múltiplas imagens na modal de adição
+            document.getElementById("addImagesUpload").addEventListener("change", function () {
+                const previewContainer = document.getElementById("addImagesPreviewContainer");
+                previewContainer.innerHTML = "";
+
+                Array.from(this.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.style.position = "relative";
+                        imgContainer.style.width = "100px";
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.style.maxWidth = "100px";
+                        img.style.maxHeight = "100px";
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.innerHTML = "✖";
+                        removeBtn.style.position = "absolute";
+                        removeBtn.style.top = "0";
+                        removeBtn.style.right = "0";
+                        removeBtn.style.background = "red";
+                        removeBtn.style.color = "white";
+                        removeBtn.style.border = "none";
+                        removeBtn.style.borderRadius = "50%";
+                        removeBtn.style.cursor = "pointer";
+
+                        removeBtn.addEventListener("click", function () {
+                            imgContainer.remove();
+                            // Atualizar o input de arquivos
+                            const dataTransfer = new DataTransfer();
+                            Array.from(document.getElementById("addImagesUpload").files)
+                                .filter(f => f !== file)
+                                .forEach(f => dataTransfer.items.add(f));
+                            document.getElementById("addImagesUpload").files = dataTransfer.files;
+                        });
+
+                        imgContainer.appendChild(img);
+                        imgContainer.appendChild(removeBtn);
+                        previewContainer.appendChild(imgContainer);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            // Lógica para upload de múltiplas imagens na modal de edição
+            document.getElementById("editImagesUpload").addEventListener("change", function () {
+                const previewContainer = document.getElementById("editImagesPreviewContainer");
+                previewContainer.innerHTML = "";
+
+                Array.from(this.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.style.position = "relative";
+                        imgContainer.style.width = "100px";
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.style.maxWidth = "100px";
+                        img.style.maxHeight = "100px";
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.innerHTML = "✖";
+                        removeBtn.style.position = "absolute";
+                        removeBtn.style.top = "0";
+                        removeBtn.style.right = "0";
+                        removeBtn.style.background = "red";
+                        removeBtn.style.color = "white";
+                        removeBtn.style.border = "none";
+                        removeBtn.style.borderRadius = "50%";
+                        removeBtn.style.cursor = "pointer";
+
+                        removeBtn.addEventListener("click", function () {
+                            imgContainer.remove();
+                            // Atualizar o input de arquivos
+                            const dataTransfer = new DataTransfer();
+                            Array.from(document.getElementById("editImagesUpload").files)
+                                .filter(f => f !== file)
+                                .forEach(f => dataTransfer.items.add(f));
+                            document.getElementById("editImagesUpload").files = dataTransfer.files;
+                        });
+
+                        imgContainer.appendChild(img);
+                        imgContainer.appendChild(removeBtn);
+                        previewContainer.appendChild(imgContainer);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        });
+
+        // Lógica para adicionar story
+        document.getElementById("addStoryForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const label = document.getElementById("addLabel").value.trim();
+            const title = document.getElementById("addTitle").value.trim();
+            const description = document.getElementById("addDescription").value.trim();
+            const files = document.getElementById("addImagesUpload").files;
+
+            if (!label || !title || !description || files.length === 0) {
+                showNotification("Preencha todos os campos obrigatórios e adicione pelo menos uma imagem.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                // Converter imagens para base64
+                const imagesBase64 = await Promise.all(
+                    Array.from(files).map(file => getBase64FromFile(file))
+                );
+
+                const story = {
+                    LabelStorie: label,
+                    TituloStorie: title,
+                    DescricaoStorie: description,
+                    ImagensStorieBase64: imagesBase64.map(img => img.split(",")[1])
+                };
+
+                const response = await fetch("/Stories/AdicionarStorie", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(story)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao adicionar story", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar story: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar story
+        document.getElementById("editStoryForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editStoryId").value;
+            const label = document.getElementById("editLabel").value.trim();
+            const title = document.getElementById("editTitle").value.trim();
+            const description = document.getElementById("editDescription").value.trim();
+            const files = document.getElementById("editImagesUpload").files;
+
+            if (!label || !title || !description) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                let imagesBase64 = [];
+
+                // Se novas imagens foram adicionadas, usa elas
+                if (files.length > 0) {
+                    imagesBase64 = await Promise.all(
+                        Array.from(files).map(file => getBase64FromFile(file))
+                    );
+                    imagesBase64 = imagesBase64.map(img => img.split(",")[1]);
+                } else {
+                    // Se não, mantém as imagens existentes
+                    const existingImages = document.querySelectorAll("#editImagesPreviewContainer img[data-base64]");
+                    imagesBase64 = Array.from(existingImages).map(img => img.getAttribute("data-base64"));
+                }
+
+                if (imagesBase64.length === 0) {
+                    showNotification("Pelo menos uma imagem é necessária.", "error");
+                    hideLoadingOverlay();
+                    return;
+                }
+
+                const story = {
+                    IdStorie: id,
+                    LabelStorie: label,
+                    TituloStorie: title,
+                    DescricaoStorie: description,
+                    ImagensStorieBase64: imagesBase64
+                };
+
+                const response = await fetch("/Stories/EditarStorie", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(story)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao editar story", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar story: " + err.message, "error");
+            }
+        });
+
+        // Função para editar story
+        window.editarStory = function (idStorie) {
+            fetch("/Stories/ObterStories")
+                .then(response => response.json())
+                .then(data => {
+                    const story = data.stories.find(p => p.idStorie === idStorie);
+                    if (story) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editStoryId").value = story.idStorie;
+                        document.getElementById("editLabel").value = story.labelStorie;
+                        document.getElementById("editTitle").value = story.tituloStorie;
+                        document.getElementById("editDescription").value = story.descricaoStorie;
+
+                        // Exibe as imagens do story na pré-visualização
+                        const previewContainer = document.getElementById("editImagesPreviewContainer");
+                        previewContainer.innerHTML = "";
+
+                        if (story.imagensStorieBase64 && story.imagensStorieBase64.length > 0) {
+                            story.imagensStorieBase64.forEach((imgBase64, index) => {
+                                const imgContainer = document.createElement("div");
+                                imgContainer.style.position = "relative";
+                                imgContainer.style.width = "100px";
+
+                                const img = document.createElement("img");
+                                img.src = `data:image/png;base64,${imgBase64}`;
+                                img.setAttribute("data-base64", imgBase64);
+                                img.style.maxWidth = "100px";
+                                img.style.maxHeight = "100px";
+
+                                const removeBtn = document.createElement("button");
+                                removeBtn.innerHTML = "✖";
+                                removeBtn.style.position = "absolute";
+                                removeBtn.style.top = "0";
+                                removeBtn.style.right = "0";
+                                removeBtn.style.background = "red";
+                                removeBtn.style.color = "white";
+                                removeBtn.style.border = "none";
+                                removeBtn.style.borderRadius = "50%";
+                                removeBtn.style.cursor = "pointer";
+
+                                removeBtn.addEventListener("click", function () {
+                                    imgContainer.remove();
+                                });
+
+                                imgContainer.appendChild(img);
+                                imgContainer.appendChild(removeBtn);
+                                previewContainer.appendChild(imgContainer);
+                            });
+                        }
+
+                        // Abre a modal de edição
+                        openEditStoryModal();
+                    }
+                });
+        };
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar stories ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarStories();
+        });
+
+        let storyParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarStory = function (idStorie, tituloStorie) {
+            storyParaDeletar = idStorie;
+            document.getElementById("nomeStoryParaDeletar").textContent = tituloStorie;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            storyParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!storyParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Stories/DeletarStorie?idStorie=${storyParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir story: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir story: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar stories
+        async function carregarStories() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#storyTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Stories/ObterStories");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar stories:", result.message);
+                    return;
+                }
+
+                result.stories.forEach(story => {
+                    const row = document.createElement("tr");
+
+                    // Mostrar apenas a primeira imagem na tabela (ou placeholder se não houver)
+                    let firstImage = "";
+                    if (story.imagensStorieBase64 && story.imagensStorieBase64.length > 0) {
+                        firstImage = `<img src="data:image/png;base64,${story.imagensStorieBase64[0]}" width="50">`;
+                    } else {
+                        firstImage = `<img src="/images/default_banner_projeto.jpg" width="50">`;
+                    }
+
+                    row.innerHTML = `
+                                <td>${story.labelStorie}</td>
+                                <td>${story.tituloStorie}</td>
+                                <td>${story.descricaoStorie}</td>
+                                <td>${firstImage} ${story.imagensStorieBase64 && story.imagensStorieBase64.length > 1 ? `+${story.imagensStorieBase64.length - 1}` : ''}</td>
+                                <td>
+                                    <button class="edit-btn" onclick="editarStory('${story.idStorie}')">✏️</button>
+                                    <button class="delete-btn" onclick="deletarStory('${story.idStorie}', '${story.tituloStorie}')">🗑️</button>
+                                </td>
+                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar stories:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+}
