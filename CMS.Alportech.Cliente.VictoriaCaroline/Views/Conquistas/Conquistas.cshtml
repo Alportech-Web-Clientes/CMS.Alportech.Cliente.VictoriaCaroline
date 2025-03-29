@@ -2,66 +2,611 @@
     ViewData["Title"] = "Conquistas";
 }
 
+<style>
+    .images-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .image-preview-item {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        padding: 5px;
+    }
+
+        .image-preview-item img {
+            max-width: 100px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+
+    .image-actions {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .remove-image-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 2px 5px;
+        border-radius: 3px;
+        color: red;
+    }
+
+    .file-input-container {
+        position: relative;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border: 1px dashed #ccc;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+        .file-input-label:hover {
+            background: #e0e0e0;
+        }
+</style>
+
 <div class="page-header">
     <h1>Gerenciar Conquistas</h1>
-    <button class="add-btn" id="addExperienceBtn">Adicionar Consquista</button>
+    <button class="add-btn" id="addConquistaBtn">Adicionar Conquista</button>
 </div>
 
 <div class="content-table">
-    <table id="experienceTable">
+    <table id="conquistaTable">
         <thead>
             <tr>
-                <th>Cargo</th>
-                <th>Empresa</th>
-                <th>Período</th>
+                <th>Título</th>
+                <th>Empresa Concedente</th>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Imagem</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Experience items will be loaded here -->
         </tbody>
     </table>
 </div>
 
-<!-- Add/Edit Experience Modal -->
-<div id="experienceModal" class="modal">
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add Conquista Modal -->
+<div id="addConquistaModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="experienceModalTitle">Adicionar Experiência</h2>
-        <form id="experienceForm">
-            <input type="hidden" id="experienceId">
+        <span class="close-modal" onclick="closeAddConquistaModal()">&times;</span>
+        <h2>Adicionar Conquista</h2>
+        <form id="addConquistaForm">
             <div class="form-group">
-                <label for="jobTitle">Cargo</label>
-                <input type="text" id="jobTitle" required>
+                <label for="addTitulo">Título</label>
+                <input type="text" id="addTitulo" required>
             </div>
             <div class="form-group">
-                <label for="company">Empresa</label>
-                <input type="text" id="company" required>
+                <label for="addEmpresa">Empresa Concedente</label>
+                <input type="text" id="addEmpresa" required>
             </div>
             <div class="form-group">
-                <label for="startDate">Data de Início</label>
-                <input type="text" id="startDate" placeholder="Ex: 2019" required>
+                <label for="addData">Data da Conquista</label>
+                <input type="text" id="addData" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
             </div>
             <div class="form-group">
-                <label for="endDate">Data de Término</label>
-                <input type="text" id="endDate" placeholder="Ex: 2021 ou Presente">
+                <label for="addDescricao">Descrição</label>
+                <textarea id="addDescricao" rows="4" required></textarea>
             </div>
             <div class="form-group">
-                <label for="jobDescription">Descrição</label>
-                <textarea id="jobDescription" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="achievements">Realizações (uma por linha)</label>
-                <textarea id="achievements" rows="4"></textarea>
+                <label>Imagem da Conquista (opcional)</label>
+                <div class="file-input-container">
+                    <label for="addConquistaImageUpload" class="file-input-label">Clique para adicionar imagem</label>
+                    <input type="file" id="addConquistaImageUpload" accept="image/*" style="display: none;">
+                </div>
+                <div id="addConquistaImagePreviewContainer" class="images-preview-container"></div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar</button>
-                <button type="button" class="cancel-btn">Cancelar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddConquistaModal()">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
-@section Scripts{
+<!-- Edit Conquista Modal -->
+<div id="editConquistaModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditConquistaModal()">&times;</span>
+        <h2>Editar Conquista</h2>
+        <form id="editConquistaForm">
+            <input type="hidden" id="editConquistaId">
+            <div class="form-group">
+                <label for="editTitulo">Título</label>
+                <input type="text" id="editTitulo" required>
+            </div>
+            <div class="form-group">
+                <label for="editEmpresa">Empresa Concedente</label>
+                <input type="text" id="editEmpresa" required>
+            </div>
+            <div class="form-group">
+                <label for="editData">Data da Conquista</label>
+                <input type="text" id="editData" class="flatpickr" placeholder="Selecione o mês/ano" data-date-format="m/Y" required>
+            </div>
+            <div class="form-group">
+                <label for="editDescricao">Descrição</label>
+                <textarea id="editDescricao" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Imagem da Conquista (opcional)</label>
+                <div class="file-input-container">
+                    <label for="editConquistaImageUpload" class="file-input-label">Clique para alterar a imagem</label>
+                    <input type="file" id="editConquistaImageUpload" accept="image/*" style="display: none;">
+                </div>
+                <div id="editConquistaImagePreviewContainer" class="images-preview-container"></div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditConquistaModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir a conquista "<span id="nomeConquistaParaDeletar"></span>"?</p>
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo conquista...</span>
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            const addConquistaBtn = document.getElementById("addConquistaBtn");
+            const addConquistaModal = document.getElementById("addConquistaModal");
+            const editConquistaModal = document.getElementById("editConquistaModal");
+
+            // Mostrar o modal de adicionar conquista
+            addConquistaBtn.addEventListener("click", function () {
+                openAddConquistaModal();
+            });
+
+            // Fechar o modal de adicionar conquista
+            window.closeAddConquistaModal = function () {
+                addConquistaModal.style.display = "none";
+                resetAddConquistaForm();
+            };
+
+            // Fechar o modal de editar conquista
+            window.closeEditConquistaModal = function () {
+                editConquistaModal.style.display = "none";
+                resetEditConquistaForm();
+            };
+
+            // Resetar o formulário de adicionar conquista
+            function resetAddConquistaForm() {
+                document.getElementById("addConquistaForm").reset();
+                document.getElementById("addConquistaImagePreviewContainer").innerHTML = "";
+            }
+
+            // Resetar o formulário de editar conquista
+            function resetEditConquistaForm() {
+                document.getElementById("editConquistaForm").reset();
+                document.getElementById("editConquistaImagePreviewContainer").innerHTML = "";
+            }
+
+            // Abrir o modal de adicionar conquista
+            window.openAddConquistaModal = function () {
+                addConquistaModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar conquista
+            window.openEditConquistaModal = function () {
+                editConquistaModal.style.display = "block";
+            };
+
+            // Lógica para upload de imagem na modal de adição
+            document.getElementById("addConquistaImageUpload").addEventListener("change", function () {
+                const previewContainer = document.getElementById("addConquistaImagePreviewContainer");
+                previewContainer.innerHTML = "";
+
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.className = "image-preview-item";
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.style.maxWidth = "100px";
+                        img.style.maxHeight = "100px";
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "remove-image-btn";
+                        removeBtn.innerHTML = "✖ Remover";
+                        removeBtn.addEventListener("click", function () {
+                            previewContainer.innerHTML = "";
+                            document.getElementById("addConquistaImageUpload").value = "";
+                        });
+
+                        imgContainer.appendChild(img);
+                        imgContainer.appendChild(removeBtn);
+                        previewContainer.appendChild(imgContainer);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Lógica para upload de imagem na modal de edição
+            document.getElementById("editConquistaImageUpload").addEventListener("change", function () {
+                const previewContainer = document.getElementById("editConquistaImagePreviewContainer");
+                previewContainer.innerHTML = "";
+
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.className = "image-preview-item";
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.style.maxWidth = "100px";
+                        img.style.maxHeight = "100px";
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "remove-image-btn";
+                        removeBtn.innerHTML = "✖ Remover";
+                        removeBtn.addEventListener("click", function () {
+                            previewContainer.innerHTML = "";
+                            document.getElementById("editConquistaImageUpload").value = "";
+                        });
+
+                        imgContainer.appendChild(img);
+                        imgContainer.appendChild(removeBtn);
+                        previewContainer.appendChild(imgContainer);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Inicializar Flatpickr para os campos de data
+            flatpickr("#addData", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+
+            flatpickr("#editData", {
+                dateFormat: "m/Y",
+                defaultDate: "",
+            });
+        });
+
+        // Lógica para adicionar conquista
+        document.getElementById("addConquistaForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addTitulo").value.trim();
+            const empresa = document.getElementById("addEmpresa").value.trim();
+            const data = document.getElementById("addData").value.trim();
+            const descricao = document.getElementById("addDescricao").value.trim();
+            const fileInput = document.getElementById("addConquistaImageUpload");
+
+            if (!titulo || !empresa || !data || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            const conquista = {
+                TituloConquista: titulo,
+                NomeEmpresaConcedente: empresa,
+                DataConquista: data,
+                DescricaoConquista: descricao,
+                ImagemConquistaBase64: imagemBase64 ? imagemBase64.split(",")[1] : null
+            };
+
+            try {
+                const response = await fetch("/Conquistas/AdicionarConquista", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(conquista)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao adicionar conquista", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar conquista: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar conquista
+        document.getElementById("editConquistaForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editConquistaId").value;
+            const titulo = document.getElementById("editTitulo").value.trim();
+            const empresa = document.getElementById("editEmpresa").value.trim();
+            const data = document.getElementById("editData").value.trim();
+            const descricao = document.getElementById("editDescricao").value.trim();
+            const fileInput = document.getElementById("editConquistaImageUpload");
+            const imagePreview = document.getElementById("editConquistaImagePreview");
+
+            if (!titulo || !empresa || !data || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+            // Se não foi enviada nova imagem, mantém a existente
+            if (!imagemBase64 && imagePreview && imagePreview.src) {
+                imagemBase64 = imagePreview.src;
+            }
+
+            const conquista = {
+                IdConquista: id,
+                TituloConquista: titulo,
+                NomeEmpresaConcedente: empresa,
+                DataConquista: data,
+                DescricaoConquista: descricao,
+                ImagemConquistaBase64: imagemBase64 ? imagemBase64.split(",")[1] : null
+            };
+
+            try {
+                const response = await fetch("/Conquistas/EditarConquista", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(conquista)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao editar conquista", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar conquista: " + err.message, "error");
+            }
+        });
+
+        // Função para editar conquista
+        window.editarConquista = function (idConquista) {
+            fetch("/Conquistas/ObterConquistas")
+                .then(response => response.json())
+                .then(data => {
+                    const conquista = data.conquistas.find(p => p.idConquista === idConquista);
+                    if (conquista) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editConquistaId").value = conquista.idConquista;
+                        document.getElementById("editTitulo").value = conquista.tituloConquista;
+                        document.getElementById("editEmpresa").value = conquista.nomeEmpresaConcedente;
+                        document.getElementById("editData").value = conquista.dataConquista;
+                        document.getElementById("editDescricao").value = conquista.descricaoConquista;
+
+                        // Exibe a imagem da Conquista na pré-visualização
+                        const editConquistaImagePreviewContainer = document.getElementById("editConquistaImagePreviewContainer");
+                        editConquistaImagePreviewContainer.innerHTML = "";
+
+                        if (conquista.imagemConquistaBase64) {
+                            const imgContainer = document.createElement("div");
+                            imgContainer.className = "image-preview-item";
+
+                            const img = document.createElement("img");
+                            img.id = "editConquistaImagePreview";
+                            img.src = `data:image/png;base64,${conquista.imagemConquistaBase64}`;
+                            img.style.maxWidth = "100px";
+                            img.style.maxHeight = "100px";
+
+                            const removeBtn = document.createElement("button");
+                            removeBtn.className = "remove-image-btn";
+                            removeBtn.innerHTML = "✖ Remover";
+                            removeBtn.addEventListener("click", function () {
+                                editConquistaImagePreviewContainer.innerHTML = "";
+                                document.getElementById("editConquistaImageUpload").value = "";
+                            });
+
+                            imgContainer.appendChild(img);
+                            imgContainer.appendChild(removeBtn);
+                            editConquistaImagePreviewContainer.appendChild(imgContainer);
+                        }
+
+                        // Abre a modal de edição
+                        openEditConquistaModal();
+                    }
+                });
+        };
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar conquistas ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarConquistas();
+        });
+
+        let conquistaParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarConquista = function (idConquista, tituloConquista) {
+            conquistaParaDeletar = idConquista;
+            document.getElementById("nomeConquistaParaDeletar").textContent = tituloConquista;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            conquistaParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!conquistaParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Conquistas/DeletarConquista?idConquista=${conquistaParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir conquista: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir conquista: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar conquistas
+        async function carregarConquistas() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#conquistaTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Conquistas/ObterConquistas");
+                const result = await response.json();
+
+                if (!result.success) {
+                    console.error("Erro ao buscar conquistas:", result.message);
+                    return;
+                }
+
+                result.conquistas.forEach(conquista => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                <td>${conquista.tituloConquista}</td>
+                                <td>${conquista.nomeEmpresaConcedente}</td>
+                                <td>${conquista.dataConquista}</td>
+                                <td>${conquista.descricaoConquista}</td>
+                                <td><img src="data:image/png;base64,${conquista.imagemConquistaBase64}" width="50"></td>
+                                <td>
+                                    <button class="edit-btn" onclick="editarConquista('${conquista.idConquista}')">✏️</button>
+                                    <button class="delete-btn" onclick="deletarConquista('${conquista.idConquista}', '${conquista.tituloConquista}')">🗑️</button>
+                                </td>
+                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar conquistas:", err);
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
 }
