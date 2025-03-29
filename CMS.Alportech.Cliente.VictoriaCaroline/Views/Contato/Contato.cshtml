@@ -8,59 +8,19 @@
 
 <div class="contact-form-container">
     <form id="contactInfoForm">
-        <div class="form-section">
-            <h2>Informações Básicas</h2>
-            <div class="form-group">
-                <label for="fullName">Nome Completo</label>
-                <input type="text" id="fullName" value="Victoria Caroline de Souza Alves" required>
-            </div>
-            <div class="form-group">
-                <label for="title">Título Profissional</label>
-                <input type="text" id="title" value="Especialista Ambiental" required>
-            </div>
+        <div>
+            <h2>Informações de Contato</h2>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" value="victoria.caroline@email.com" required>
+                <input type="email" id="email" required>
             </div>
             <div class="form-group">
                 <label for="phone">Telefone</label>
-                <input type="text" id="phone" value="+55 (11) 98765-4321">
+                <input type="text" id="phone" required>
             </div>
             <div class="form-group">
                 <label for="location">Localização</label>
-                <input type="text" id="location" value="São Paulo, SP - Brasil">
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h2>Redes Sociais</h2>
-            <div id="socialLinks">
-                <div class="social-link-item">
-                    <div class="form-group">
-                        <label for="socialType0">Rede Social</label>
-                        <select id="socialType0" class="social-type">
-                            <option value="linkedin">LinkedIn</option>
-                            <option value="github">GitHub</option>
-                            <option value="twitter">Twitter</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="facebook">Facebook</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="socialUrl0">URL</label>
-                        <input type="url" id="socialUrl0" class="social-url" value="https://www.linkedin.com/in/victoria-caroline-de-souza-alves-663814186/">
-                    </div>
-                    <button type="button" class="remove-btn">Remover</button>
-                </div>
-            </div>
-            <button type="button" id="addSocialBtn" class="add-social-btn">Adicionar Rede Social</button>
-        </div>
-
-        <div class="form-section">
-            <h2>Sobre Mim</h2>
-            <div class="form-group">
-                <label for="aboutMe">Descrição</label>
-                <textarea id="aboutMe" rows="6">Sou Victoria Caroline de Souza Alves, uma especialista ambiental com foco em desenvolvimento sustentável e gestão de recursos hídricos. Minha paixão pela conservação ambiental me impulsiona a criar soluções inovadoras que equilibram a preservação ecológica com as necessidades humanas.</textarea>
+                <input type="text" id="location" required>
             </div>
         </div>
 
@@ -71,5 +31,105 @@
 </div>
 
 @section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
 
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            // Carregar dados do contato ao iniciar a página
+            carregarContato();
+        });
+
+        // Função para carregar os dados de contato
+        async function carregarContato() {
+            try {
+                const response = await fetch("/Contato/ObterContato");
+                const result = await response.json();
+
+                if (result.success && result.contato) {
+                    document.getElementById("email").value = result.contato.email || "";
+                    document.getElementById("phone").value = result.contato.telefone || "";
+                    document.getElementById("location").value = result.contato.localizacao || "";
+                }
+            } catch (err) {
+                console.error("Erro ao carregar contato:", err);
+            }
+        }
+
+        // Lógica para salvar alterações
+        document.getElementById("contactInfoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const location = document.getElementById("location").value.trim();
+
+            if (!email) {
+                showNotification("O campo Email é obrigatório.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            const contato = {
+                Email: email,
+                Telefone: phone,
+                Localizacao: location
+            };
+
+            try {
+                const response = await fetch("/Contato/AtualizarContato", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(contato)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    showNotification("Contato atualizado com sucesso!", "success");
+                } else {
+                    showNotification(result.message || "Erro ao atualizar contato", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao atualizar contato: " + err.message, "error");
+            }
+        });
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+    </script>
 }

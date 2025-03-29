@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "mvzJzq2MSQBbRSk7XlaZ/fqheGSoEci7ekJzA7HL5Po=",
+  "Hash": "N1eNJC4Px5aZzO6YWvFfEwv4vARkWRH0gqaL1hcgbXY=",
   "Source": "CMS.Alportech.Cliente.VictoriaCaroline",
   "BasePath": "_content/CMS.Alportech.Cliente.VictoriaCaroline",
   "Mode": "Default",
@@ -129,6 +129,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\default_banner_projeto.jpg"
+    },
+    {
+      "Identity": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_profile.png",
+      "SourceId": "CMS.Alportech.Cliente.VictoriaCaroline",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\",
+      "BasePath": "_content/CMS.Alportech.Cliente.VictoriaCaroline",
+      "RelativePath": "images/default_profile.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\default_profile.png"
     },
     {
       "Identity": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_user_icon.png",

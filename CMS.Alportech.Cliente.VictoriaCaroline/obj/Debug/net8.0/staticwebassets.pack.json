@@ -21,6 +21,10 @@
       "PackagePath": "staticwebassets\\images\\default_banner_projeto.jpg"
     },
     {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_profile.png",
+      "PackagePath": "staticwebassets\\images\\default_profile.png"
+    },
+    {
       "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_user_icon.png",
       "PackagePath": "staticwebassets\\images\\default_user_icon.png"
     },

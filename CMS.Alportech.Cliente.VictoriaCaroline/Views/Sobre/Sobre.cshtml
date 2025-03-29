@@ -1,0 +1,249 @@
+﻿@{
+    ViewData["Title"] = "Sobre";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Informações Sobre</h1>
+</div>
+
+<div class="about-container">
+    <div class="profile-picture-container">
+        <div class="profile-picture-wrapper">
+            <img id="profilePicturePreview" src="/images/default_profile.png" alt="Foto de Perfil">
+            <input type="file" id="profilePictureUpload" accept="image/*" style="display: none;">
+            <button type="button" class="upload-btn" onclick="document.getElementById('profilePictureUpload').click()">Alterar Foto</button>
+        </div>
+    </div>
+
+    <div class="contact-form-container">
+        <form id="contactInfoForm">
+            <div class="form-section">
+                <h2>Informações Básicas</h2>
+                <div class="form-group">
+                    <label for="fullName">Nome</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="title">Título Profissional</label>
+                    <input type="text" id="title" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Sobre Mim</h2>
+                <div class="form-group">
+                    <label for="aboutMe">Descrição</label>
+                    <textarea id="aboutMe" rows="6" required></textarea>
+                </div>
+            </div>
+
+            <div class="form-actions centered">
+                <button type="submit" class="save-btn">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .about-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .profile-picture-container {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-picture-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #profilePicturePreview {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ddd;
+        }
+
+        .upload-btn {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .upload-btn:hover {
+                background-color: #45a049;
+            }
+
+        .contact-form-container {
+            flex: 1;
+        }
+
+        @@media (max-width: 768px) {
+            .about-container {
+                flex-direction: column;
+            }
+
+            .profile-picture-container {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Carregar informações do usuário
+            await carregarInformacoesSobre();
+
+            // Configurar evento de upload de imagem
+            document.getElementById("profilePictureUpload").addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        document.getElementById("profilePicturePreview").src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Configurar envio do formulário
+            document.getElementById("contactInfoForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const nome = document.getElementById("fullName").value.trim();
+                const titulo = document.getElementById("title").value.trim();
+                const sobreMim = document.getElementById("aboutMe").value.trim();
+                const fileInput = document.getElementById("profilePictureUpload");
+
+                if (!nome || !titulo || !sobreMim) {
+                    showNotification("Preencha todos os campos obrigatórios.", "error");
+                    return;
+                }
+
+                showLoadingOverlay();
+
+                let fotoBase64 = "";
+                if (fileInput.files[0]) {
+                    fotoBase64 = await getBase64FromFile(fileInput.files[0]);
+                    fotoBase64 = fotoBase64.split(",")[1]; // Remove o prefixo
+                } else {
+                    // Se não foi enviada nova imagem, mantém a existente
+                    const imgPreview = document.getElementById("profilePicturePreview");
+                    if (imgPreview.src.includes("base64")) {
+                        fotoBase64 = imgPreview.src.split(",")[1];
+                    }
+                }
+
+                const sobre = {
+                    Nome: nome,
+                    TituloOcupacao: titulo,
+                    DescricaoSobreMim: sobreMim,
+                    FotoPerfilBase64: fotoBase64
+                };
+
+                try {
+                    const response = await fetch("/Sobre/SalvarInformacoesSobre", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(sobre)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showNotification("Informações salvas com sucesso!", "success");
+                    } else {
+                        showNotification(result.message || "Erro ao salvar informações.", "error");
+                    }
+                } catch (err) {
+                    showNotification("Erro ao salvar informações: " + err.message, "error");
+                } finally {
+                    hideLoadingOverlay();
+                }
+            });
+
+            // Mostrar notificações
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+        });
+
+        async function carregarInformacoesSobre() {
+            try {
+                const response = await fetch("/Sobre/ObterInformacoesSobre");
+                const result = await response.json();
+                console.log(result);
+                if (result.success && result.sobre) {
+                    document.getElementById("fullName").value = result.sobre.nome || "";
+                    document.getElementById("title").value = result.sobre.tituloOcupacao || "";
+                    document.getElementById("aboutMe").value = result.sobre.descricaoSobreMim || "";
+
+                    if (result.sobre.fotoPerfilBase64) {
+                        document.getElementById("profilePicturePreview").src = `data:image/png;base64,${result.sobre.fotoPerfilBase64}`;
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao carregar informações:", err);
+            }
+        }
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+    </script>
+}
