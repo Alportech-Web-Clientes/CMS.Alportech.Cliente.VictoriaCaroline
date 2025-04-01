@@ -25,8 +25,32 @@
       "PackagePath": "staticwebassets\\images\\default_profile.png"
     },
     {
-      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_user_icon.png",
-      "PackagePath": "staticwebassets\\images\\default_user_icon.png"
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_email.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_email.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_facebook.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_facebook.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_instagram.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_instagram.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_linkedin.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_linkedin.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_tiktok.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_tiktok.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_x.png",
+      "PackagePath": "staticwebassets\\images\\default_rede_x.png"
+    },
+    {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\image-removebg-preview (6).png",
+      "PackagePath": "staticwebassets\\images\\image-removebg-preview (6).png"
     },
     {
       "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\logo.webp",

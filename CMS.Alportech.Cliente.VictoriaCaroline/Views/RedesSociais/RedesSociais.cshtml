@@ -1,0 +1,393 @@
+﻿@{
+    ViewData["Title"] = "Redes Sociais";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Redes Sociais</h1>
+</div>
+
+<div class="content-container">
+    <div class="form-section">
+        <h2>Redes Sociais</h2>
+        <div id="socialLinks">
+            <!-- Itens serão adicionados dinamicamente -->
+        </div>
+        <button type="button" id="addSocialBtn" class="add-social-btn">Adicionar Rede Social</button>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" id="saveBtn" class="save-btn">Salvar Alterações</button>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p>Tem certeza que deseja remover esta rede social?</p>
+        
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Removendo rede social...</span>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn">Excluir</button>
+            <button type="button" class="cancel-btn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .social-link-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .add-social-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-social-btn:hover {
+            background: #45a049;
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .social-type {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .social-url {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            max-width: 90%;
+            border-radius: 5px;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: black;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const socialLinksContainer = document.getElementById("socialLinks");
+            const addSocialBtn = document.getElementById("addSocialBtn");
+            const saveBtn = document.getElementById("saveBtn");
+            const availableSocialNetworks = [
+                { value: "email", name: "Email" },
+                { value: "linkedin", name: "LinkedIn" },
+                { value: "facebook", name: "Facebook" },
+                { value: "instagram", name: "Instagram" },
+                { value: "twitter", name: "X (Twitter)" },
+                { value: "youtube", name: "YouTube" },
+                { value: "tiktok", name: "TikTok" }
+            ];
+
+            let redeSocialParaDeletar = null;
+            let itemParaDeletar = null; // Novo: guarda a referência do item a ser deletado
+            let redesSociais = [];
+
+            // Carregar redes sociais existentes
+            carregarRedesSociais();
+
+            // Adicionar novo campo de rede social
+            addSocialBtn.addEventListener("click", function () {
+                if (socialLinksContainer.children.length >= 7) {
+                    showNotification("Você pode adicionar no máximo 7 redes sociais.", "error");
+                    return;
+                }
+                adicionarCampoRedeSocial();
+            });
+
+            // Salvar alterações
+            saveBtn.addEventListener("click", salvarRedesSociais);
+
+            // Função para adicionar campo de rede social
+            function adicionarCampoRedeSocial(redeSocial = null) {
+                const itemId = redeSocial?.idRedeSocial || Date.now().toString();
+                const div = document.createElement("div");
+                div.className = "social-link-item";
+                div.dataset.id = itemId;
+
+                let selectOptions = '';
+                availableSocialNetworks.forEach(network => {
+                    const isSelected = redeSocial?.tipoRedeSocial === network.value;
+                    selectOptions += `<option value="${network.value}" ${isSelected ? 'selected' : ''}>${network.name}</option>`;
+                });
+
+                div.innerHTML = `
+                            <div class="form-group">
+                                <label for="socialType${itemId}">Rede Social</label>
+                                <select id="socialType${itemId}" class="social-type" required>
+                                    <option value="">Selecione uma rede social</option>
+                                    ${selectOptions}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="socialUrl${itemId}">URL</label>
+                                <input type="url" id="socialUrl${itemId}" class="social-url" value="${redeSocial?.urlRedeSocial || ''}" required>
+                            </div>
+                            <button type="button" class="remove-btn" onclick="prepararExclusao('${itemId}')">Remover</button>
+                        `;
+
+                socialLinksContainer.appendChild(div);
+            }
+
+            // Preparar exclusão de rede social - CORRIGIDO
+            window.prepararExclusao = function (itemId) {
+                const item = document.querySelector(`.social-link-item[data-id="${itemId}"]`);
+                if (item) {
+                    redeSocialParaDeletar = itemId;
+                    itemParaDeletar = item; // Guarda a referência direta ao elemento
+                    document.getElementById("deleteConfirmationModal").style.display = "block";
+                }
+            };
+
+            // Confirmar exclusão - CORRIGIDO
+            document.getElementById("confirmDeleteBtn").addEventListener("click", confirmarExclusao);
+
+            // Fechar modal de exclusão
+            window.closeDeleteModal = function () {
+                document.getElementById("deleteConfirmationModal").style.display = "none";
+                redeSocialParaDeletar = null;
+                itemParaDeletar = null;
+            };
+
+            // Função para confirmar exclusão - CORRIGIDO
+            async function confirmarExclusao() {
+                if (!redeSocialParaDeletar || !itemParaDeletar) {
+                    closeDeleteModal();
+                    return;
+                }
+
+                // Mostrar loading
+                document.getElementById("deleteLoading").style.display = "block";
+                document.getElementById("confirmDeleteBtn").disabled = true;
+                document.querySelector(".cancel-btn").disabled = true;
+
+                try {
+                    // Se for um item já salvo (tem ID), chama a API
+                    if (redeSocialParaDeletar && redeSocialParaDeletar.length > 0 && redeSocialParaDeletar !== 'undefined') {
+                        const response = await fetch(`/RedesSociais/DeletarRedeSocial?idRedeSocial=${redeSocialParaDeletar}`, {
+                            method: "DELETE"
+                        });
+
+                        const result = await response.json();
+
+                        if (!result.success) {
+                            showNotification(result.message || "Erro ao remover rede social", "error");
+                            return;
+                        }
+                    }
+
+                    // Remove o item da tela independentemente de ser salvo ou não
+                    itemParaDeletar.remove();
+                    showNotification("Rede social removida com sucesso!", "success");
+
+                } catch (error) {
+                    console.error("Erro ao remover rede social:", error);
+                    showNotification("Erro ao remover rede social: " + error.message, "error");
+                } finally {
+                    closeDeleteModal();
+                    document.getElementById("deleteLoading").style.display = "none";
+                    document.getElementById("confirmDeleteBtn").disabled = false;
+                    document.querySelector(".cancel-btn").disabled = false;
+                }
+            }
+
+            // Carregar redes sociais existentes
+            async function carregarRedesSociais() {
+                try {
+                    showLoadingOverlay();
+                    const response = await fetch("/RedesSociais/ObterRedesSociais");
+                    const result = await response.json();
+
+                    socialLinksContainer.innerHTML = "";
+
+                    if (result.success && result.redesSociais.length > 0) {
+                        redesSociais = result.redesSociais;
+                        redesSociais.forEach(rede => {
+                            adicionarCampoRedeSocial(rede);
+                        });
+                    } else {
+                        // Adiciona um campo vazio se não houver redes sociais
+                        adicionarCampoRedeSocial();
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar redes sociais:", error);
+                    showNotification("Erro ao carregar redes sociais: " + error.message, "error");
+                } finally {
+                    hideLoadingOverlay();
+                }
+            }
+
+            // Salvar redes sociais
+            async function salvarRedesSociais() {
+                const items = document.querySelectorAll('.social-link-item');
+                const redesParaSalvar = [];
+
+                // Validar antes de enviar
+                let isValid = true;
+                const tiposSelecionados = new Set();
+
+                items.forEach((item) => {
+                    const tipo = item.querySelector('.social-type').value;
+                    const url = item.querySelector('.social-url').value;
+                    const id = item.dataset.id;
+
+                    if (!tipo || !url) {
+                        isValid = false;
+                        return;
+                    }
+
+                    if (tiposSelecionados.has(tipo)) {
+                        isValid = false;
+                        return;
+                    }
+
+                    tiposSelecionados.add(tipo);
+
+                    redesParaSalvar.push({
+                        idRedeSocial: id || null,
+                        tipoRedeSocial: tipo,
+                        urlRedeSocial: url,
+                        nomeRedeSocial: item.querySelector(`.social-type option[value="${tipo}"]`).textContent
+                    });
+                });
+
+                if (!isValid) {
+                    showNotification("Preencha todos os campos corretamente e evite redes sociais duplicadas.", "error");
+                    return;
+                }
+
+                try {
+                    showLoadingOverlay();
+                    const response = await fetch("/RedesSociais/SalvarRedesSociais", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(redesParaSalvar)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showNotification("Redes sociais salvas com sucesso!", "success");
+                        await carregarRedesSociais(); // Recarrega para atualizar IDs
+                    } else {
+                        showNotification(result.message || "Erro ao salvar redes sociais", "error");
+                    }
+                } catch (error) {
+                    console.error("Erro ao salvar redes sociais:", error);
+                    showNotification("Erro ao salvar redes sociais: " + error.message, "error");
+                } finally {
+                    hideLoadingOverlay();
+                }
+            }
+
+            // Funções auxiliares (mantidas iguais)
+            function showLoadingOverlay() {
+                const overlay = document.createElement("div");
+                overlay.className = "loading-overlay";
+                overlay.innerHTML = '<div class="loading-spinner"></div>';
+                document.body.appendChild(overlay);
+            }
+
+            function hideLoadingOverlay() {
+                const overlay = document.querySelector(".loading-overlay");
+                if (overlay) {
+                    overlay.remove();
+                }
+            }
+
+            function showNotification(message, type = "success") {
+                const notification = document.createElement("div");
+                notification.className = "notification-top-right";
+                notification.innerText = message;
+                if (type === "error") {
+                    notification.classList.add("notification-error");
+                }
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
+            }
+        });
+    </script>
+}
