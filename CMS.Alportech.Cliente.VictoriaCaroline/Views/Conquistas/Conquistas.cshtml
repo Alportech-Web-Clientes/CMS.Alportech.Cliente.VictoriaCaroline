@@ -581,7 +581,7 @@
                 const result = await response.json();
 
                 if (!result.success) {
-                    console.error("Erro ao buscar conquistas:", result.message);
+                    showNotification("Erro ao buscar conquistas:" + result.message, "error");
                     return;
                 }
 
@@ -603,7 +603,7 @@
                     tbody.appendChild(row);
                 });
             } catch (err) {
-                console.error("Erro ao carregar conquistas:", err);
+                showNotification("Erro ao carregar conquistas:" + err.message, "error");
             } finally {
                 loading.style.display = "none";
             }

@@ -53,8 +53,8 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Services
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
-            var rawCsv = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"CSV recebido:\n{rawCsv}");
+            //var rawCsv = await response.Content.ReadAsStringAsync();
+            //Console.WriteLine($"CSV recebido:\n{rawCsv}");
 
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);

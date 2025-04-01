@@ -51,6 +51,7 @@
         // Função para carregar os dados de contato
         async function carregarContato() {
             try {
+                showLoadingOverlay();
                 const response = await fetch("/Contato/ObterContato");
                 const result = await response.json();
 
@@ -60,7 +61,9 @@
                     document.getElementById("location").value = result.contato.localizacao || "";
                 }
             } catch (err) {
-                console.error("Erro ao carregar contato:", err);
+                showNotification("Erro ao carregar contatos:" + err.message, "error");
+            } finally {
+                hideLoadingOverlay();
             }
         }
 

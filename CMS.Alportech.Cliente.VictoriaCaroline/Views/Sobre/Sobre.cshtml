@@ -29,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="form-section">
+            <div>
                 <h2>Sobre Mim</h2>
                 <div class="form-group">
                     <label for="aboutMe">Descrição</label>
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="form-actions centered">
+            <div class="form-actions">
                 <button type="submit" class="save-btn">Salvar Alterações</button>
             </div>
         </form>
@@ -194,9 +194,9 @@
 
         async function carregarInformacoesSobre() {
             try {
+                showLoadingOverlay();
                 const response = await fetch("/Sobre/ObterInformacoesSobre");
                 const result = await response.json();
-                console.log(result);
                 if (result.success && result.sobre) {
                     document.getElementById("fullName").value = result.sobre.nome || "";
                     document.getElementById("title").value = result.sobre.tituloOcupacao || "";
@@ -207,7 +207,9 @@
                     }
                 }
             } catch (err) {
-                console.error("Erro ao carregar informações:", err);
+                showNotification("Erro ao carregar informações:" + err.message, "error");
+            } finally {
+                hideLoadingOverlay();
             }
         }
 

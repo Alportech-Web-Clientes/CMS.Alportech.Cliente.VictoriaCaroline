@@ -575,7 +575,7 @@
                 const result = await response.json();
 
                 if (!result.success) {
-                    console.error("Erro ao buscar projetos:", result.message);
+                    showNotification("Erro ao buscar projetos:" + result.message, "error");
                     return;
                 }
 
@@ -598,7 +598,7 @@
                     tbody.appendChild(row);
                 });
             } catch (err) {
-                console.error("Erro ao carregar projetos:", err);
+                showNotification("Erro ao carregar projetos:", "error");
             } finally {
                 loading.style.display = "none";
             }
