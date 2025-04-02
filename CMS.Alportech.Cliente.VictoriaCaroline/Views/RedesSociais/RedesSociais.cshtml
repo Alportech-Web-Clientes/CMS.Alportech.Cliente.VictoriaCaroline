@@ -26,7 +26,7 @@
         <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
         <h2>Confirmar Exclusão</h2>
         <p>Tem certeza que deseja remover esta rede social?</p>
-        
+
         <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
             <span>Removendo rede social...</span>
             <div class="loading-spinner"></div>
@@ -62,6 +62,18 @@
             cursor: pointer;
         }
 
+        .cancel-add-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
         .add-social-btn {
             background: #4CAF50;
             color: white;
@@ -72,9 +84,9 @@
             margin-top: 10px;
         }
 
-        .add-social-btn:hover {
-            background: #45a049;
-        }
+            .add-social-btn:hover {
+                background: #45a049;
+            }
 
         .form-actions {
             margin-top: 20px;
@@ -125,8 +137,28 @@
             cursor: pointer;
         }
 
-        .close-modal:hover {
-            color: black;
+            .close-modal:hover {
+                color: black;
+            }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 }
@@ -148,7 +180,7 @@
             ];
 
             let redeSocialParaDeletar = null;
-            let itemParaDeletar = null; // Novo: guarda a referência do item a ser deletado
+            let itemParaDeletar = null;
             let redesSociais = [];
 
             // Carregar redes sociais existentes
@@ -168,7 +200,7 @@
 
             // Função para adicionar campo de rede social
             function adicionarCampoRedeSocial(redeSocial = null) {
-                const itemId = redeSocial?.idRedeSocial || Date.now().toString();
+                const itemId = redeSocial?.idRedeSocial || 'new_' + Date.now();
                 const div = document.createElement("div");
                 div.className = "social-link-item";
                 div.dataset.id = itemId;
@@ -179,35 +211,49 @@
                     selectOptions += `<option value="${network.value}" ${isSelected ? 'selected' : ''}>${network.name}</option>`;
                 });
 
+                // Verifica se é uma rede nova (não salva) ou existente
+                const isNew = itemId.startsWith('new_');
+                const actionButton = isNew
+                    ? `<button type="button" class="cancel-add-btn" onclick="cancelarAdicao('${itemId}')">Cancelar</button>`
+                    : `<button type="button" class="remove-btn" onclick="prepararExclusao('${itemId}')">Remover</button>`;
+
                 div.innerHTML = `
                             <div class="form-group">
-                                <label for="socialType${itemId}">Rede Social</label>
-                                <select id="socialType${itemId}" class="social-type" required>
+                                <label>Rede Social</label>
+                                <select class="social-type" required>
                                     <option value="">Selecione uma rede social</option>
                                     ${selectOptions}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="socialUrl${itemId}">URL</label>
-                                <input type="url" id="socialUrl${itemId}" class="social-url" value="${redeSocial?.urlRedeSocial || ''}" required>
+                                <label>URL</label>
+                                <input type="url" class="social-url" value="${redeSocial?.urlRedeSocial || ''}" required>
                             </div>
-                            <button type="button" class="remove-btn" onclick="prepararExclusao('${itemId}')">Remover</button>
+                            ${actionButton}
                         `;
 
                 socialLinksContainer.appendChild(div);
             }
 
-            // Preparar exclusão de rede social - CORRIGIDO
-            window.prepararExclusao = function (itemId) {
+            // Função para cancelar adição de nova rede (apenas frontend)
+            window.cancelarAdicao = function (itemId) {
                 const item = document.querySelector(`.social-link-item[data-id="${itemId}"]`);
                 if (item) {
+                    item.remove();
+                }
+            };
+
+            // Preparar exclusão de rede social existente
+            window.prepararExclusao = function (itemId) {
+                const item = document.querySelector(`.social-link-item[data-id="${itemId}"]`);
+                if (item && !itemId.startsWith('new_')) {
                     redeSocialParaDeletar = itemId;
-                    itemParaDeletar = item; // Guarda a referência direta ao elemento
+                    itemParaDeletar = item;
                     document.getElementById("deleteConfirmationModal").style.display = "block";
                 }
             };
 
-            // Confirmar exclusão - CORRIGIDO
+            // Confirmar exclusão
             document.getElementById("confirmDeleteBtn").addEventListener("click", confirmarExclusao);
 
             // Fechar modal de exclusão
@@ -217,37 +263,30 @@
                 itemParaDeletar = null;
             };
 
-            // Função para confirmar exclusão - CORRIGIDO
+            // Função para confirmar exclusão
             async function confirmarExclusao() {
                 if (!redeSocialParaDeletar || !itemParaDeletar) {
                     closeDeleteModal();
                     return;
                 }
 
-                // Mostrar loading
                 document.getElementById("deleteLoading").style.display = "block";
                 document.getElementById("confirmDeleteBtn").disabled = true;
                 document.querySelector(".cancel-btn").disabled = true;
 
                 try {
-                    // Se for um item já salvo (tem ID), chama a API
-                    if (redeSocialParaDeletar && redeSocialParaDeletar.length > 0 && redeSocialParaDeletar !== 'undefined') {
-                        const response = await fetch(`/RedesSociais/DeletarRedeSocial?idRedeSocial=${redeSocialParaDeletar}`, {
-                            method: "DELETE"
-                        });
+                    const response = await fetch(`/RedesSociais/DeletarRedeSocial?idRedeSocial=${redeSocialParaDeletar}`, {
+                        method: "DELETE"
+                    });
 
-                        const result = await response.json();
+                    const result = await response.json();
 
-                        if (!result.success) {
-                            showNotification(result.message || "Erro ao remover rede social", "error");
-                            return;
-                        }
+                    if (result.success) {
+                        itemParaDeletar.remove();
+                        showNotification("Rede social removida com sucesso!", "success");
+                    } else {
+                        showNotification(result.message || "Erro ao remover rede social", "error");
                     }
-
-                    // Remove o item da tela independentemente de ser salvo ou não
-                    itemParaDeletar.remove();
-                    showNotification("Rede social removida com sucesso!", "success");
-
                 } catch (error) {
                     showNotification("Erro ao remover rede social: " + error.message, "error");
                 } finally {
@@ -258,6 +297,7 @@
                 }
             }
 
+            // [Restante do código permanece igual...]
             // Carregar redes sociais existentes
             async function carregarRedesSociais() {
                 try {
@@ -309,11 +349,14 @@
 
                     tiposSelecionados.add(tipo);
 
+                    // Ignora IDs temporários (novos itens)
+                    const idParaSalvar = id.startsWith('new_') ? null : id;
+
                     redesParaSalvar.push({
-                        idRedeSocial: id || null,
+                        idRedeSocial: idParaSalvar,
                         tipoRedeSocial: tipo,
                         urlRedeSocial: url,
-                        nomeRedeSocial: item.querySelector(`.social-type option[value="${tipo}"]`).textContent
+                        nomeRedeSocial: item.querySelector('.social-type option:checked').textContent
                     });
                 });
 
@@ -334,7 +377,7 @@
 
                     if (result.success) {
                         showNotification("Redes sociais salvas com sucesso!", "success");
-                        await carregarRedesSociais(); // Recarrega para atualizar IDs
+                        await carregarRedesSociais();
                     } else {
                         showNotification(result.message || "Erro ao salvar redes sociais", "error");
                     }
@@ -345,7 +388,7 @@
                 }
             }
 
-            // Funções auxiliares (mantidas iguais)
+            // Funções auxiliares
             function showLoadingOverlay() {
                 const overlay = document.createElement("div");
                 overlay.className = "loading-overlay";

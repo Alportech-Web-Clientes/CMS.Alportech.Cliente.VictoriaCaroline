@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "lNMM5Qu8GRd1Oi8pDGVO29BbvbpEl3IatgHnRQXV7Ho=",
+  "Hash": "9Cw+4oXiLAq+66Sy5uCn6vUNqBbkC92dUvlfvxwtarA=",
   "Source": "CMS.Alportech.Cliente.VictoriaCaroline",
   "BasePath": "_content/CMS.Alportech.Cliente.VictoriaCaroline",
   "Mode": "Default",
@@ -264,12 +264,12 @@
       "OriginalItemSpec": "wwwroot\\images\\default_rede_x.png"
     },
     {
-      "Identity": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\image-removebg-preview (6).png",
+      "Identity": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_rede_youtube.png",
       "SourceId": "CMS.Alportech.Cliente.VictoriaCaroline",
       "SourceType": "Discovered",
       "ContentRoot": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\",
       "BasePath": "_content/CMS.Alportech.Cliente.VictoriaCaroline",
-      "RelativePath": "images/image-removebg-preview (6).png",
+      "RelativePath": "images/default_rede_youtube.png",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -280,7 +280,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\images\\image-removebg-preview (6).png"
+      "OriginalItemSpec": "wwwroot\\images\\default_rede_youtube.png"
     },
     {
       "Identity": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\logo.webp",
