@@ -18,6 +18,10 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline
 build_property._RazorSourceGeneratorDebug = 
 
+[C:/GIT_REP/Alportech Clientes/Alportech.Cliente.VictoriaCaroline/CMS.Alportech.Cliente.VictoriaCaroline/CMS.Alportech.Cliente.VictoriaCaroline/Views/AreasAtuacao/AreasAtuacao.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXJlYXNBdHVhY2FvXEFyZWFzQXR1YWNhby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/GIT_REP/Alportech Clientes/Alportech.Cliente.VictoriaCaroline/CMS.Alportech.Cliente.VictoriaCaroline/CMS.Alportech.Cliente.VictoriaCaroline/Views/Auth/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

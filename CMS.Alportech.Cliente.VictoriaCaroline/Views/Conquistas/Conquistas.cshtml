@@ -343,17 +343,29 @@
 
             showLoadingOverlay();
 
-            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
-
-            const conquista = {
-                TituloConquista: titulo,
-                NomeEmpresaConcedente: empresa,
-                DataConquista: data,
-                DescricaoConquista: descricao,
-                ImagemConquistaBase64: imagemBase64 ? imagemBase64.split(",")[1] : null
-            };
-
             try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                // Se não houver imagem enviada, carrega a imagem padrão
+                if (!imagemBase64) {
+                    const defaultImgPath = "/images/default_banner_projeto.jpg";
+                    imagemBase64 = await fetch(defaultImgPath)
+                        .then(res => res.blob())
+                        .then(blob => new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        }));
+                }
+
+                const conquista = {
+                    TituloConquista: titulo,
+                    NomeEmpresaConcedente: empresa,
+                    DataConquista: data,
+                    DescricaoConquista: descricao,
+                    ImagemConquistaBase64: imagemBase64.split(",")[1] // Pega apenas a parte base64
+                };
+
                 const response = await fetch("/Conquistas/AdicionarConquista", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -373,7 +385,7 @@
                 showNotification("Erro ao salvar conquista: " + err.message, "error");
             }
         });
-
+        
         // Lógica para editar conquista
         document.getElementById("editConquistaForm").addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -393,23 +405,36 @@
 
             showLoadingOverlay();
 
-            let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
-
-            // Se não foi enviada nova imagem, mantém a existente
-            if (!imagemBase64 && imagePreview && imagePreview.src) {
-                imagemBase64 = imagePreview.src;
-            }
-
-            const conquista = {
-                IdConquista: id,
-                TituloConquista: titulo,
-                NomeEmpresaConcedente: empresa,
-                DataConquista: data,
-                DescricaoConquista: descricao,
-                ImagemConquistaBase64: imagemBase64 ? imagemBase64.split(",")[1] : null
-            };
-
             try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                // Se não foi enviada nova imagem, verifica se já existe uma
+                if (!imagemBase64) {
+                    if (imagePreview && imagePreview.src && imagePreview.src.includes("base64")) {
+                        // Mantém a imagem existente
+                        imagemBase64 = imagePreview.src;
+                    } else {
+                        // Carrega a imagem padrão
+                        const defaultImgPath = "/images/default_banner_projeto.jpg";
+                        imagemBase64 = await fetch(defaultImgPath)
+                            .then(res => res.blob())
+                            .then(blob => new Promise(resolve => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result);
+                                reader.readAsDataURL(blob);
+                            }));
+                    }
+                }
+
+                const conquista = {
+                    IdConquista: id,
+                    TituloConquista: titulo,
+                    NomeEmpresaConcedente: empresa,
+                    DataConquista: data,
+                    DescricaoConquista: descricao,
+                    ImagemConquistaBase64: imagemBase64.split(",")[1] // Pega apenas a parte base64
+                };
+
                 const response = await fetch("/Conquistas/EditarConquista", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -429,7 +454,7 @@
                 showNotification("Erro ao editar conquista: " + err.message, "error");
             }
         });
-
+        
         // Função para editar conquista
         window.editarConquista = function (idConquista) {
             fetch("/Conquistas/ObterConquistas")

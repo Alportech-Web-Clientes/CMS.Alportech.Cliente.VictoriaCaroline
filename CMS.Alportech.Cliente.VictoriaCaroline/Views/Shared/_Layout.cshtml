@@ -53,6 +53,7 @@
             </div>
             <ul class="nav-links">
                 <li><a href="@Url.Action("Index", "Dashboard")" class="nav-link @(ViewContext.RouteData.Values["Controller"]!.ToString() == "Dashboard" ? "active" : "")"><span class="icon">📊</span> Dashboard</a></li>
+                <li><a href="@Url.Action("Index", "AreasAtuacao")" class="nav-link @(ViewContext.RouteData.Values["Controller"]!.ToString() == "AreasAtuacao" ? "active" : "")"><span class="icon">🛠️</span> Áreas de Atuação</a></li>
                 <li><a href="@Url.Action("Index", "Projetos")" class="nav-link @(ViewContext.RouteData.Values["Controller"]!.ToString() == "Projetos" ? "active" : "")"><span class="icon">🚀</span> Projetos</a></li>
                 <li><a href="@Url.Action("Index", "Experiencias")" class="nav-link @(ViewContext.RouteData.Values["Controller"]!.ToString() == "Experiencias" ? "active" : "")"><span class="icon">💼</span> Experiência</a></li>
                 <li><a href="@Url.Action("Index", "Formacoes")" class="nav-link @(ViewContext.RouteData.Values["Controller"]!.ToString() == "Formacoes" ? "active" : "")"><span class="icon">🎓</span> Educação</a></li>

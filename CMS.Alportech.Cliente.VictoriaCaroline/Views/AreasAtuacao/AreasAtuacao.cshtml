@@ -1,0 +1,554 @@
+﻿@{
+    ViewData["Title"] = "Áreas de Atuação";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Áreas de Atuação</h1>
+    <button class="add-btn" id="addAreaAtuacaoBtn">Adicionar Área de Atuação</button>
+</div>
+
+<div class="content-table">
+    <table id="areaAtuacaoTable">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Descrição</th>
+                <th>Imagem</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<input type="hidden" id="editAreaAtuacaoExistingImage" name="editAreaAtuacaoExistingImage">
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add AreaAtuacao Modal -->
+<div id="addAreaAtuacaoModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAddAreaAtuacaoModal()">&times;</span>
+        <h2>Adicionar Área de Atuação</h2>
+        <form id="addAreaAtuacaoForm">
+            <div class="form-group">
+                <label for="addTitulo">Título</label>
+                <input type="text" id="addTitulo" required>
+            </div>
+            <div class="form-group">
+                <label for="addDescricao">Descrição</label>
+                <textarea id="addDescricao" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="addAreaAtuacaoImageUpload">Imagem da Área de Atuação (opcional)</label>
+                <input type="file" id="addAreaAtuacaoImageUpload" accept="image/*">
+                <!-- Campo de pré-visualização da imagem com botão de remover -->
+                <div id="addAreaAtuacaoImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="addAreaAtuacaoImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddAreaAtuacaoModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit AreaAtuacao Modal -->
+<div id="editAreaAtuacaoModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditAreaAtuacaoModal()">&times;</span>
+        <h2>Editar Área de Atuação</h2>
+        <form id="editAreaAtuacaoForm">
+            <input type="hidden" id="editAreaAtuacaoId">
+            <div class="form-group">
+                <label for="editTitulo">Título</label>
+                <input type="text" id="editTitulo" required>
+            </div>
+            <div class="form-group">
+                <label for="editDescricao">Descrição</label>
+                <textarea id="editDescricao" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="editAreaAtuacaoImageUpload">Imagem da Área de Atuação (opcional)</label>
+                <input type="file" id="editAreaAtuacaoImageUpload" accept="image/*">
+                <div id="editAreaAtuacaoImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="editAreaAtuacaoImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeEditImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditAreaAtuacaoModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir a área de atuação "<span id="nomeAreaAtuacaoParaDeletar"></span>"?</p>
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo área de atuação...</span>
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            const addAreaAtuacaoBtn = document.getElementById("addAreaAtuacaoBtn");
+            const addAreaAtuacaoModal = document.getElementById("addAreaAtuacaoModal");
+            const editAreaAtuacaoModal = document.getElementById("editAreaAtuacaoModal");
+
+            // Mostrar o modal de adicionar área de atuação
+            addAreaAtuacaoBtn.addEventListener("click", function () {
+                openAddAreaAtuacaoModal();
+            });
+
+            // Fechar o modal de adicionar área de atuação
+            window.closeAddAreaAtuacaoModal = function () {
+                addAreaAtuacaoModal.style.display = "none";
+                resetAddAreaAtuacaoForm();
+            };
+
+            // Fechar o modal de editar área de atuação
+            window.closeEditAreaAtuacaoModal = function () {
+                editAreaAtuacaoModal.style.display = "none";
+                resetEditAreaAtuacaoForm();
+            };
+
+            // Resetar o formulário de adicionar área de atuação
+            function resetAddAreaAtuacaoForm() {
+                document.getElementById("addAreaAtuacaoForm").reset();
+                document.getElementById("addAreaAtuacaoImagePreview").src = "";
+                document.getElementById("addAreaAtuacaoImagePreviewContainer").style.display = "none";
+            }
+
+            // Resetar o formulário de editar área de atuação
+            function resetEditAreaAtuacaoForm() {
+                document.getElementById("editAreaAtuacaoForm").reset();
+                document.getElementById("editAreaAtuacaoImagePreview").src = "";
+                document.getElementById("editAreaAtuacaoImagePreviewContainer").style.display = "none";
+            }
+
+            // Abrir o modal de adicionar área de atuação
+            window.openAddAreaAtuacaoModal = function () {
+                addAreaAtuacaoModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar área de atuação
+            window.openEditAreaAtuacaoModal = function () {
+                editAreaAtuacaoModal.style.display = "block";
+            };
+        });
+
+        // Lógica para adicionar área de atuação
+        document.getElementById("addAreaAtuacaoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addTitulo").value.trim();
+            const descricao = document.getElementById("addDescricao").value.trim();
+            const fileInput = document.getElementById("addAreaAtuacaoImageUpload");
+
+            if (!titulo || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                // Se não houver imagem enviada, carrega a imagem padrão
+                if (!imagemBase64) {
+                    const defaultImgPath = "/images/default_banner_projeto.jpg";
+                    imagemBase64 = await fetch(defaultImgPath)
+                        .then(res => res.blob())
+                        .then(blob => new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        }));
+                }
+
+                const areaAtuacao = {
+                    TituloAreaAtuacao: titulo,
+                    DescricaoAreaAtuacao: descricao,
+                    ImagemAreaAtuacaoBase64: imagemBase64.split(",")[1] // Pega apenas a parte base64
+                };
+
+                const response = await fetch("/AreasAtuacao/AdicionarAreaAtuacao", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(areaAtuacao)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao adicionar área de atuação", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar área de atuação: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar área de atuação
+        document.getElementById("editAreaAtuacaoForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editAreaAtuacaoId").value;
+            const titulo = document.getElementById("editTitulo").value.trim();
+            const descricao = document.getElementById("editDescricao").value.trim();
+            const fileInput = document.getElementById("editAreaAtuacaoImageUpload");
+            const imagePreview = document.getElementById("editAreaAtuacaoImagePreview");
+
+            if (!titulo || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                // Se não foi enviada nova imagem, verifica se já existe uma
+                if (!imagemBase64) {
+                    if (imagePreview && imagePreview.src && imagePreview.src.includes("base64")) {
+                        // Mantém a imagem existente
+                        imagemBase64 = imagePreview.src;
+                    } else {
+                        // Carrega a imagem padrão
+                        const defaultImgPath = "/images/default_banner_projeto.jpg";
+                        imagemBase64 = await fetch(defaultImgPath)
+                            .then(res => res.blob())
+                            .then(blob => new Promise(resolve => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result);
+                                reader.readAsDataURL(blob);
+                            }));
+                    }
+                }
+
+                const areaAtuacao = {
+                    IdAreaAtuacao: id,
+                    TituloAreaAtuacao: titulo,
+                    DescricaoAreaAtuacao: descricao,
+                    ImagemAreaAtuacaoBase64: imagemBase64.split(",")[1] // Pega apenas a parte base64
+                };
+
+                const response = await fetch("/AreasAtuacao/EditarAreaAtuacao", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(areaAtuacao)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao editar área de atuação", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar área de atuação: " + err.message, "error");
+            }
+        });
+        // Função para editar área de atuação
+        window.editarAreaAtuacao = function (idAreaAtuacao) {
+            fetch("/AreasAtuacao/ObterAreasAtuacao")
+                .then(response => response.json())
+                .then(data => {
+                    const areaAtuacao = data.areasAtuacao.find(p => p.idAreaAtuacao === idAreaAtuacao);
+                    if (areaAtuacao) {
+                        // Preenche os campos do formulário de edição
+                        document.getElementById("editAreaAtuacaoId").value = areaAtuacao.idAreaAtuacao;
+                        document.getElementById("editTitulo").value = areaAtuacao.tituloAreaAtuacao;
+                        document.getElementById("editDescricao").value = areaAtuacao.descricaoAreaAtuacao;
+
+                        // Exibe a imagem da Área de Atuação na pré-visualização
+                        const editAreaAtuacaoImagePreview = document.getElementById("editAreaAtuacaoImagePreview");
+                        const editAreaAtuacaoImagePreviewContainer = document.getElementById("editAreaAtuacaoImagePreviewContainer");
+
+                        if (areaAtuacao.imagemAreaAtuacaoBase64) {
+                            editAreaAtuacaoImagePreview.src = `data:image/png;base64,${areaAtuacao.imagemAreaAtuacaoBase64}`;
+                            editAreaAtuacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+
+                            // Preenche o campo de upload com a imagem existente
+                            const editAreaAtuacaoImageUpload = document.getElementById("editAreaAtuacaoImageUpload");
+                            const file = base64ToFile(areaAtuacao.imagemAreaAtuacaoBase64, "imagem_area_atuacao.png");
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            editAreaAtuacaoImageUpload.files = dataTransfer.files;
+                        } else {
+                            // Se não houver imagem, exibe a imagem padrão
+                            editAreaAtuacaoImagePreview.src = "/images/default_banner_projeto.jpg";
+                            editAreaAtuacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                        }
+
+                        // Abre a modal de edição
+                        openEditAreaAtuacaoModal();
+                    }
+                });
+        };
+
+        function base64ToFile(base64, filename) {
+            // Verifica se a string base64 já contém o prefixo
+            if (!base64.startsWith("data:")) {
+                // Adiciona o prefixo manualmente
+                base64 = `data:image/png;base64,${base64}`;
+            }
+
+            const arr = base64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        }
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar áreas de atuação ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarAreasAtuacao();
+        });
+    </script>
+
+    <script>
+        let areaAtuacaoParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarAreaAtuacao = function (idAreaAtuacao, tituloAreaAtuacao) {
+            areaAtuacaoParaDeletar = idAreaAtuacao;
+            document.getElementById("nomeAreaAtuacaoParaDeletar").textContent = tituloAreaAtuacao;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            areaAtuacaoParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!areaAtuacaoParaDeletar) return;
+
+            // Desabilita o botão de exclusão e mostra o indicador de carregamento
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/AreasAtuacao/DeletarAreaAtuacao?idAreaAtuacao=${areaAtuacaoParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir área de atuação: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir área de atuação: " + err.message, "error");
+            } finally {
+                // Reabilita o botão de exclusão e esconde o indicador de carregamento
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar áreas de atuação
+        async function carregarAreasAtuacao() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#areaAtuacaoTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/AreasAtuacao/ObterAreasAtuacao");
+                const result = await response.json();
+
+                if (!result.success) {
+                    showNotification("Erro ao buscar áreas de atuação:" + result.message, "error");
+                    return;
+                }
+
+                result.areasAtuacao.forEach(areaAtuacao => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                        <td>${areaAtuacao.tituloAreaAtuacao}</td>
+                                        <td>${areaAtuacao.descricaoAreaAtuacao}</td>
+                                        <td><img src="data:image/png;base64,${areaAtuacao.imagemAreaAtuacaoBase64}" width="50"></td>
+                                        <td>
+                                            <button class="edit-btn" onclick="editarAreaAtuacao('${areaAtuacao.idAreaAtuacao}')">✏️</button>
+                                            <button class="delete-btn" onclick="deletarAreaAtuacao('${areaAtuacao.idAreaAtuacao}', '${areaAtuacao.tituloAreaAtuacao}')">🗑️</button>
+                                        </td>
+                                    `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                showNotification("Erro ao carregar áreas de atuação:" + err.message, "error");
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addAreaAtuacaoImageUpload = document.getElementById("addAreaAtuacaoImageUpload");
+            const addAreaAtuacaoImagePreview = document.getElementById("addAreaAtuacaoImagePreview");
+            const addAreaAtuacaoImagePreviewContainer = document.getElementById("addAreaAtuacaoImagePreviewContainer");
+            const removeImageBtn = document.getElementById("removeImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            addAreaAtuacaoImageUpload.addEventListener("change", function () {
+                const file = addAreaAtuacaoImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        addAreaAtuacaoImagePreview.src = e.target.result;
+                        addAreaAtuacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeImageBtn.addEventListener("click", function () {
+                resetImagePreview();
+            });
+
+            // Função para resetar a pré-visualização e o campo de upload
+            function resetImagePreview() {
+                addAreaAtuacaoImagePreview.src = "";
+                addAreaAtuacaoImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                addAreaAtuacaoImageUpload.value = ""; // Limpa o campo de upload
+            }
+
+            // Resetar a pré-visualização ao abrir a modal de adição
+            document.getElementById("addAreaAtuacaoBtn").addEventListener("click", function () {
+                resetImagePreview();
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editAreaAtuacaoImageUpload = document.getElementById("editAreaAtuacaoImageUpload");
+            const editAreaAtuacaoImagePreview = document.getElementById("editAreaAtuacaoImagePreview");
+            const editAreaAtuacaoImagePreviewContainer = document.getElementById("editAreaAtuacaoImagePreviewContainer");
+            const removeEditImageBtn = document.getElementById("removeEditImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            editAreaAtuacaoImageUpload.addEventListener("change", function () {
+                const file = editAreaAtuacaoImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        editAreaAtuacaoImagePreview.src = e.target.result;
+                        editAreaAtuacaoImagePreviewContainer.style.display = "flex"; // Exibe o container da pré-visualização
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetEditImagePreview(); // Reseta a pré-visualização se nenhuma imagem for selecionada
+                }
+            });
+
+            // Evento para remover a imagem
+            removeEditImageBtn.addEventListener("click", function () {
+                resetEditImagePreview();
+            });
+
+            function resetEditImagePreview() {
+                editAreaAtuacaoImagePreview.src = "";
+                editAreaAtuacaoImagePreviewContainer.style.display = "none"; // Oculta o container da pré-visualização
+                editAreaAtuacaoImageUpload.value = ""; // Limpa o campo de upload
+            }
+        });
+    </script>
+}
