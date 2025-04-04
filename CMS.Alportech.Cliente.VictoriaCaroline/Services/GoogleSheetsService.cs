@@ -136,6 +136,5 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Services
 
             return [.. csv.GetRecords<Projeto>().OrderByDescending(p => DateTime.ParseExact(p.DataCriacaoProjeto!, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))];
         }
-
     }
 }

@@ -1,0 +1,541 @@
+﻿@{
+    ViewData["Title"] = "Destaques";
+}
+
+<div class="page-header">
+    <h1>Gerenciar Destaques</h1>
+    <button class="add-btn" id="addDestaqueBtn">Adicionar Destaque</button>
+</div>
+
+<div class="content-table">
+    <table id="destaqueTable">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Descrição</th>
+                <th>Imagem</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<input type="hidden" id="editDestaqueExistingImage" name="editDestaqueExistingImage">
+
+<div id="loading" style="display: none; text-align: center; margin: 20px;">
+    <span width="50"></span>
+</div>
+
+<!-- Add Destaque Modal -->
+<div id="addDestaqueModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAddDestaqueModal()">&times;</span>
+        <h2>Adicionar Destaque</h2>
+        <form id="addDestaqueForm">
+            <div class="form-group">
+                <label for="addTitulo">Título</label>
+                <input type="text" id="addTitulo" required>
+            </div>
+            <div class="form-group">
+                <label for="addDescricao">Descrição</label>
+                <textarea id="addDescricao" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="addDestaqueImageUpload">Imagem do Destaque (opcional)</label>
+                <input type="file" id="addDestaqueImageUpload" accept="image/*">
+                <div id="addDestaqueImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="addDestaqueImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeAddDestaqueModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Destaque Modal -->
+<div id="editDestaqueModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeEditDestaqueModal()">&times;</span>
+        <h2>Editar Destaque</h2>
+        <form id="editDestaqueForm">
+            <input type="hidden" id="editDestaqueId">
+            <div class="form-group">
+                <label for="editTitulo">Título</label>
+                <input type="text" id="editTitulo" required>
+            </div>
+            <div class="form-group">
+                <label for="editDescricao">Descrição</label>
+                <textarea id="editDescricao" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="editDestaqueImageUpload">Imagem do Destaque (opcional)</label>
+                <input type="file" id="editDestaqueImageUpload" accept="image/*">
+                <div id="editDestaqueImagePreviewContainer" style="margin-top: 10px; display: none;">
+                    <img id="editDestaqueImagePreview" src="" style="max-width: 100px;">
+                    <button type="button" id="removeEditImageBtn" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red;">✖</button>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Salvar</button>
+                <button type="button" class="cancel-btn" onclick="closeEditDestaqueModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="deleteConfirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        <h2>Confirmar Exclusão</h2>
+        <p id="deleteConfirmationMessage">Você realmente deseja excluir o destaque "<span id="nomeDestaqueParaDeletar"></span>"?</p>
+        <div id="deleteLoading" style="display: none; text-align: center; margin: 10px 0;">
+            <span>Excluindo destaque...</span>
+            <div class="loading-spinner"></div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="delete-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            <button type="button" class="cancel-btn" id="cancelarDeleteBtn" onclick="closeDeleteModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
+            const addDestaqueBtn = document.getElementById("addDestaqueBtn");
+            const addDestaqueModal = document.getElementById("addDestaqueModal");
+            const editDestaqueModal = document.getElementById("editDestaqueModal");
+
+            // Mostrar o modal de adicionar destaque
+            addDestaqueBtn.addEventListener("click", function () {
+                openAddDestaqueModal();
+            });
+
+            // Fechar o modal de adicionar destaque
+            window.closeAddDestaqueModal = function () {
+                addDestaqueModal.style.display = "none";
+                resetAddDestaqueForm();
+            };
+
+            // Fechar o modal de editar destaque
+            window.closeEditDestaqueModal = function () {
+                editDestaqueModal.style.display = "none";
+                resetEditDestaqueForm();
+            };
+
+            // Resetar o formulário de adicionar destaque
+            function resetAddDestaqueForm() {
+                document.getElementById("addDestaqueForm").reset();
+                document.getElementById("addDestaqueImagePreview").src = "";
+                document.getElementById("addDestaqueImagePreviewContainer").style.display = "none";
+            }
+
+            // Resetar o formulário de editar destaque
+            function resetEditDestaqueForm() {
+                document.getElementById("editDestaqueForm").reset();
+                document.getElementById("editDestaqueImagePreview").src = "";
+                document.getElementById("editDestaqueImagePreviewContainer").style.display = "none";
+            }
+
+            // Abrir o modal de adicionar destaque
+            window.openAddDestaqueModal = function () {
+                addDestaqueModal.style.display = "block";
+            };
+
+            // Abrir o modal de editar destaque
+            window.openEditDestaqueModal = function () {
+                editDestaqueModal.style.display = "block";
+            };
+        });
+
+        // Lógica para adicionar destaque
+        document.getElementById("addDestaqueForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const titulo = document.getElementById("addTitulo").value.trim();
+            const descricao = document.getElementById("addDescricao").value.trim();
+            const fileInput = document.getElementById("addDestaqueImageUpload");
+
+            if (!titulo || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                if (!imagemBase64) {
+                    const defaultImgPath = "/images/default_banner_projeto.jpg";
+                    imagemBase64 = await fetch(defaultImgPath)
+                        .then(res => res.blob())
+                        .then(blob => new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        }));
+                }
+
+                const destaque = {
+                    TituloDestaque: titulo,
+                    DescricaoDestaque: descricao,
+                    ImagemDestaqueBase64: imagemBase64.split(",")[1]
+                };
+
+                const response = await fetch("/Destaques/AdicionarDestaque", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(destaque)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao adicionar destaque", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao salvar destaque: " + err.message, "error");
+            }
+        });
+
+        // Lógica para editar destaque
+        document.getElementById("editDestaqueForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editDestaqueId").value;
+            const titulo = document.getElementById("editTitulo").value.trim();
+            const descricao = document.getElementById("editDescricao").value.trim();
+            const fileInput = document.getElementById("editDestaqueImageUpload");
+            const imagePreview = document.getElementById("editDestaqueImagePreview");
+
+            if (!titulo || !descricao) {
+                showNotification("Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            try {
+                let imagemBase64 = await getBase64FromFile(fileInput.files[0]);
+
+                if (!imagemBase64) {
+                    if (imagePreview && imagePreview.src && imagePreview.src.includes("base64")) {
+                        imagemBase64 = imagePreview.src;
+                    } else {
+                        const defaultImgPath = "/images/default_banner_projeto.jpg";
+                        imagemBase64 = await fetch(defaultImgPath)
+                            .then(res => res.blob())
+                            .then(blob => new Promise(resolve => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result);
+                                reader.readAsDataURL(blob);
+                            }));
+                    }
+                }
+
+                const destaque = {
+                    IdDestaque: id,
+                    TituloDestaque: titulo,
+                    DescricaoDestaque: descricao,
+                    ImagemDestaqueBase64: imagemBase64.split(",")[1]
+                };
+
+                const response = await fetch("/Destaques/EditarDestaque", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(destaque)
+                });
+
+                const result = await response.json();
+                hideLoadingOverlay();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || "Erro ao editar destaque", "error");
+                }
+            } catch (err) {
+                hideLoadingOverlay();
+                showNotification("Erro ao editar destaque: " + err.message, "error");
+            }
+        });
+
+        // Função para editar destaque
+        window.editarDestaque = function (idDestaque) {
+            fetch("/Destaques/ObterDestaques")
+                .then(response => response.json())
+                .then(data => {
+                    const destaque = data.destaques.find(p => p.idDestaque === idDestaque);
+                    if (destaque) {
+                        document.getElementById("editDestaqueId").value = destaque.idDestaque;
+                        document.getElementById("editTitulo").value = destaque.tituloDestaque;
+                        document.getElementById("editDescricao").value = destaque.descricaoDestaque;
+
+                        const editDestaqueImagePreview = document.getElementById("editDestaqueImagePreview");
+                        const editDestaqueImagePreviewContainer = document.getElementById("editDestaqueImagePreviewContainer");
+
+                        if (destaque.imagemDestaqueBase64) {
+                            editDestaqueImagePreview.src = `data:image/png;base64,${destaque.imagemDestaqueBase64}`;
+                            editDestaqueImagePreviewContainer.style.display = "flex";
+
+                            const editDestaqueImageUpload = document.getElementById("editDestaqueImageUpload");
+                            const file = base64ToFile(destaque.imagemDestaqueBase64, "imagem_destaque.png");
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            editDestaqueImageUpload.files = dataTransfer.files;
+                        } else {
+                            editDestaqueImagePreview.src = "/images/default_banner_projeto.jpg";
+                            editDestaqueImagePreviewContainer.style.display = "flex";
+                        }
+
+                        openEditDestaqueModal();
+                    }
+                });
+        };
+
+        function base64ToFile(base64, filename) {
+            if (!base64.startsWith("data:")) {
+                base64 = `data:image/png;base64,${base64}`;
+            }
+
+            const arr = base64.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, { type: mime });
+        }
+
+        // Funções auxiliares
+        function showLoadingOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "loading-overlay";
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.querySelector(".loading-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function getBase64FromFile(file) {
+            return new Promise((resolve) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = "notification-top-right";
+            notification.innerText = message;
+            if (type === "error") {
+                notification.classList.add("notification-error");
+            }
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Carregar destaques ao iniciar a página
+        document.addEventListener("DOMContentLoaded", async function () {
+            await carregarDestaques();
+        });
+    </script>
+
+    <script>
+        let destaqueParaDeletar = null;
+
+        // Função para abrir a modal de confirmação de exclusão
+        window.deletarDestaque = function (idDestaque, tituloDestaque) {
+            destaqueParaDeletar = idDestaque;
+            document.getElementById("nomeDestaqueParaDeletar").textContent = tituloDestaque;
+            document.getElementById("deleteConfirmationModal").style.display = "block";
+        };
+
+        // Função para fechar a modal de confirmação de exclusão
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmationModal").style.display = "none";
+            destaqueParaDeletar = null;
+        }
+
+        // Função para confirmar a exclusão
+        async function confirmDelete() {
+            if (!destaqueParaDeletar) return;
+
+            const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+            const cancelarDeleteBtn = document.getElementById("cancelarDeleteBtn");
+            confirmDeleteBtn.style.display = "none";
+            cancelarDeleteBtn.style.display = "none";
+            document.getElementById("deleteLoading").style.display = "block";
+
+            try {
+                const response = await fetch(`/Destaques/DeletarDestaque?idDestaque=${destaqueParaDeletar}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification("Erro ao excluir destaque: " + result.message, "error");
+                    confirmDeleteBtn.style.display = "";
+                    cancelarDeleteBtn.style.display = "";
+                }
+            } catch (err) {
+                showNotification("Erro ao excluir destaque: " + err.message, "error");
+            } finally {
+                confirmDeleteBtn.style.display = "";
+                cancelarDeleteBtn.style.display = "";
+                document.getElementById("deleteLoading").style.display = "none";
+                closeDeleteModal();
+            }
+        }
+
+        // Atualizar a função de carregar destaques
+        async function carregarDestaques() {
+            const loading = document.getElementById("loading");
+            const tbody = document.querySelector("#destaqueTable tbody");
+
+            try {
+                loading.style.display = "block";
+                tbody.innerHTML = "";
+
+                const response = await fetch("/Destaques/ObterDestaques");
+                const result = await response.json();
+
+                if (!result.success) {
+                    showNotification("Erro ao buscar destaques:" + result.message, "error");
+                    return;
+                }
+
+                result.destaques.forEach(destaque => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                                <td>${destaque.tituloDestaque}</td>
+                                <td>${destaque.descricaoDestaque}</td>
+                                <td><img src="data:image/png;base64,${destaque.imagemDestaqueBase64}" width="50"></td>
+                                <td>
+                                    <button class="edit-btn" onclick="editarDestaque('${destaque.idDestaque}')">✏️</button>
+                                    <button class="delete-btn" onclick="deletarDestaque('${destaque.idDestaque}', '${destaque.tituloDestaque}')">🗑️</button>
+                                </td>
+                            `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                showNotification("Erro ao carregar destaques:" + err.message, "error");
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addDestaqueImageUpload = document.getElementById("addDestaqueImageUpload");
+            const addDestaqueImagePreview = document.getElementById("addDestaqueImagePreview");
+            const addDestaqueImagePreviewContainer = document.getElementById("addDestaqueImagePreviewContainer");
+            const removeImageBtn = document.getElementById("removeImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            addDestaqueImageUpload.addEventListener("change", function () {
+                const file = addDestaqueImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        addDestaqueImagePreview.src = e.target.result;
+                        addDestaqueImagePreviewContainer.style.display = "flex";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetImagePreview();
+                }
+            });
+
+            // Evento para remover a imagem
+            removeImageBtn.addEventListener("click", function () {
+                resetImagePreview();
+            });
+
+            // Função para resetar a pré-visualização e o campo de upload
+            function resetImagePreview() {
+                addDestaqueImagePreview.src = "";
+                addDestaqueImagePreviewContainer.style.display = "none";
+                addDestaqueImageUpload.value = "";
+            }
+
+            // Resetar a pré-visualização ao abrir a modal de adição
+            document.getElementById("addDestaqueBtn").addEventListener("click", function () {
+                resetImagePreview();
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const editDestaqueImageUpload = document.getElementById("editDestaqueImageUpload");
+            const editDestaqueImagePreview = document.getElementById("editDestaqueImagePreview");
+            const editDestaqueImagePreviewContainer = document.getElementById("editDestaqueImagePreviewContainer");
+            const removeEditImageBtn = document.getElementById("removeEditImageBtn");
+
+            // Evento para exibir a pré-visualização da imagem
+            editDestaqueImageUpload.addEventListener("change", function () {
+                const file = editDestaqueImageUpload.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        editDestaqueImagePreview.src = e.target.result;
+                        editDestaqueImagePreviewContainer.style.display = "flex";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resetEditImagePreview();
+                }
+            });
+
+            // Evento para remover a imagem
+            removeEditImageBtn.addEventListener("click", function () {
+                resetEditImagePreview();
+            });
+
+            function resetEditImagePreview() {
+                editDestaqueImagePreview.src = "";
+                editDestaqueImagePreviewContainer.style.display = "none";
+                editDestaqueImageUpload.value = "";
+            }
+        });
+    </script>
+}

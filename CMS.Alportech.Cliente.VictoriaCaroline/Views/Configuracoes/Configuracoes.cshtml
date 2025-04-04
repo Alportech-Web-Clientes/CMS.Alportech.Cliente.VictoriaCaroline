@@ -2,23 +2,374 @@
     ViewData["Title"] = "Configurações";
 }
 
-<div class="settings-section">
-    <h2>Configurações da Conta</h2>
-    <div class="form-group">
-        <label for="username">Nome de Usuário</label>
-        <input type="text" id="username" value="victoria.admin">
-    </div>
-    <div class="form-group">
-        <label for="currentPassword">Senha Atual</label>
-        <input type="password" id="currentPassword">
-    </div>
-    <div class="form-group">
-        <label for="newPassword">Nova Senha</label>
-        <input type="password" id="newPassword">
-    </div>
-    <div class="form-group">
-        <label for="confirmPassword">Confirmar Nova Senha</label>
-        <input type="password" id="confirmPassword">
-    </div>
-    <button id="updatePasswordBtn" class="save-btn">Atualizar Senha</button>
+<div class="page-header">
+    <h1>Configurações da Conta</h1>
 </div>
+
+<div class="settings-container">
+    <!-- Seção de Foto de Perfil -->
+    <div class="settings-section">
+        <h2>Foto de Perfil</h2>
+        <div class="profile-picture-container">
+            <img id="profilePicture" src="@(ViewBag.FotoPerfil != null ? $"data:image/png;base64,{ViewBag.FotoPerfil}" : "/images/default_user_icon.png")" alt="Foto de Perfil">
+            <input type="file" id="profilePictureUpload" accept="image/*" style="display: none;">
+            <button class="change-photo-btn" onclick="document.getElementById('profilePictureUpload').click()">Alterar Foto</button>
+            <button class="remove-photo-btn" id="removePhotoBtn">Remover Foto</button>
+        </div>
+    </div>
+
+    <!-- Seção de Nome de Usuário -->
+    <div class="settings-section">
+        <h2>Nome de Usuário</h2>
+        <div class="form-group">
+            <label for="username">Nome</label>
+            <input type="text" id="username" value="@ViewBag.NomeUsuario">
+        </div>
+        <button id="updateUsernameBtn" class="save-btn">Atualizar Nome</button>
+    </div>
+
+    <!-- Seção de Senha -->
+    <div class="settings-section">
+        <h2>Alterar Senha</h2>
+        <div class="form-group">
+            <label for="currentPassword">Senha Atual</label>
+            <input type="password" id="currentPassword">
+        </div>
+        <div class="form-group">
+            <label for="newPassword">Nova Senha</label>
+            <input type="password" id="newPassword">
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Confirmar Nova Senha</label>
+            <input type="password" id="confirmPassword">
+        </div>
+        <button id="updatePasswordBtn" class="save-btn">Atualizar Senha</button>
+    </div>
+</div>
+
+<div id="loadingOverlay" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
+
+@section Styles {
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .settings-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-picture-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        #profilePicture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #eee;
+        }
+
+        .change-photo-btn, .remove-photo-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .change-photo-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .remove-photo-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+
+            .form-group input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
+            }
+
+        .save-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            color: white;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+            .notification.success {
+                background-color: #4CAF50;
+            }
+
+            .notification.error {
+                background-color: #f44336;
+            }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Atualizar Nome de Usuário
+            document.getElementById("updateUsernameBtn").addEventListener("click", async function () {
+                const novoNome = document.getElementById("username").value.trim();
+
+                if (!novoNome) {
+                    showNotification("O nome não pode estar vazio.", "error");
+                    return;
+                }
+
+                showLoading();
+
+                try {
+                    const response = await fetch("/Configuracoes/AtualizarNome", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ NovoNome: novoNome })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showNotification(result.message, "success");
+                    } else {
+                        showNotification(result.message, "error");
+                    }
+                } catch (error) {
+                    showNotification("Erro ao atualizar nome: " + error.message, "error");
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // Atualizar Senha
+            document.getElementById("updatePasswordBtn").addEventListener("click", async function () {
+                const senhaAtual = document.getElementById("currentPassword").value;
+                const novaSenha = document.getElementById("newPassword").value;
+                const confirmarSenha = document.getElementById("confirmPassword").value;
+
+                if (!senhaAtual || !novaSenha || !confirmarSenha) {
+                    showNotification("Todos os campos são obrigatórios.", "error");
+                    return;
+                }
+
+                if (novaSenha !== confirmarSenha) {
+                    showNotification("As senhas não coincidem.", "error");
+                    return;
+                }
+
+                showLoading();
+
+                try {
+                    const response = await fetch("/Configuracoes/AtualizarSenha", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            SenhaAtual: senhaAtual,
+                            NovaSenha: novaSenha,
+                            ConfirmarSenha: confirmarSenha
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showNotification(result.message, "success");
+                        document.getElementById("currentPassword").value = "";
+                        document.getElementById("newPassword").value = "";
+                        document.getElementById("confirmPassword").value = "";
+                    } else {
+                        showNotification(result.message, "error");
+                    }
+                } catch (error) {
+                    showNotification("Erro ao atualizar senha: " + error.message, "error");
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // Atualizar Foto de Perfil
+            document.getElementById("profilePictureUpload").addEventListener("change", async function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                showLoading();
+
+                try {
+                    const base64Image = await convertFileToBase64(file);
+                    const response = await fetch("/Configuracoes/AtualizarFotoPerfil", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ FotoBase64: base64Image.split(",")[1] })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById("profilePicture").src = result.fotoUrl;
+                        showNotification(result.message, "success");
+                    } else {
+                        showNotification(result.message, "error");
+                    }
+                } catch (error) {
+                    showNotification("Erro ao atualizar foto: " + error.message, "error");
+                } finally {
+                    hideLoading();
+                    e.target.value = ""; // Limpa o input file
+                }
+            });
+
+            // Remover Foto de Perfil
+            document.getElementById("removePhotoBtn").addEventListener("click", async function () {
+                if (!confirm("Tem certeza que deseja remover sua foto de perfil?")) return;
+
+                showLoading();
+
+                try {
+                    const response = await fetch("/Configuracoes/AtualizarFotoPerfil", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ FotoBase64: "" })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById("profilePicture").src = "/images/default_user_icon.png";
+                        showNotification(result.message, "success");
+                    } else {
+                        showNotification(result.message, "error");
+                    }
+                } catch (error) {
+                    showNotification("Erro ao remover foto: " + error.message, "error");
+                } finally {
+                    hideLoading();
+                }
+            });
+        });
+
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement("div");
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+}
