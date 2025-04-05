@@ -221,7 +221,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showNotification(result.message, "success");
+                        location.reload();
                     } else {
                         showNotification(result.message, "error");
                     }
@@ -266,10 +266,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showNotification(result.message, "success");
-                        document.getElementById("currentPassword").value = "";
-                        document.getElementById("newPassword").value = "";
-                        document.getElementById("confirmPassword").value = "";
+                        location.reload();
                     } else {
                         showNotification(result.message, "error");
                     }
@@ -300,8 +297,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        document.getElementById("profilePicture").src = result.fotoUrl;
-                        showNotification(result.message, "success");
+                        location.reload();
                     } else {
                         showNotification(result.message, "error");
                     }
@@ -331,8 +327,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        document.getElementById("profilePicture").src = "/images/default_user_icon.png";
-                        showNotification(result.message, "success");
+                        location.reload();
                     } else {
                         showNotification(result.message, "error");
                     }

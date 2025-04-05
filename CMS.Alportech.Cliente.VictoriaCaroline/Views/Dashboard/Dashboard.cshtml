@@ -7,32 +7,19 @@
 <div class="dashboard-summary">
     <div class="summary-card">
         <h3>Projetos</h3>
-        <p class="summary-value" id="projectsCount">0</p>
+        <p class="summary-value" id="projectsCount">@ViewBag.ProjetosCount</p>
     </div>
     <div class="summary-card">
         <h3>Experiências</h3>
-        <p class="summary-value" id="experienceCount">0</p>
+        <p class="summary-value" id="experienceCount">@ViewBag.ExperienciasCount</p>
     </div>
     <div class="summary-card">
         <h3>Formações</h3>
-        <p class="summary-value" id="educationCount">0</p>
+        <p class="summary-value" id="educationCount">@ViewBag.FormacoesCount</p>
     </div>
     <div class="summary-card">
-        <h3>Habilidades</h3>
-        <p class="summary-value" id="skillsCount">0</p>
-    </div>
-</div>
-
-<div class="recent-activity">
-    <h2>Atividades Recentes</h2>
-    <div class="activity-list" id="activityList">
-        <div class="activity-item">
-            <span class="activity-icon">🔄</span>
-            <div class="activity-content">
-                <p class="activity-text">Bem-vindo ao Dashboard Administrativo</p>
-                <p class="activity-time">Agora</p>
-            </div>
-        </div>
+        <h3>Conquistas</h3>
+        <p class="summary-value" id="skillsCount">@ViewBag.ConquistasCount</p>
     </div>
 </div>
 
@@ -53,11 +40,78 @@
         </button>
         <button class="action-btn" data-target="skills">
             <span class="action-icon">➕</span>
-            Adicionar Habilidade
+            Adicionar Conquista
         </button>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Configurar os botões de ação rápida
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const target = this.getAttribute('data-target');
+                    navigateToTarget(target);
+                });
+            });
 
+            // Função para navegar para a página correta e abrir o modal
+            function navigateToTarget(target) {
+                let url = '';
+                let modalId = '';
+
+                switch (target) {
+                    case 'projects':
+                        url = '/Projetos';
+                        modalId = 'addProjectBtn';
+                        break;
+                    case 'experience':
+                        url = '/Experiencias';
+                        modalId = 'addExperienceBtn';
+                        break;
+                    case 'education':
+                        url = '/Formacoes';
+                        modalId = 'addFormacaoBtn';
+                        break;
+                    case 'skills':
+                        url = '/Conquistas';
+                        modalId = 'addConquistaBtn';
+                        break;
+                    default:
+                        return;
+                }
+
+                // Redireciona para a página
+                window.location.href = url;
+
+                // Quando a página carregar, tenta abrir o modal
+                window.addEventListener('load', function () {
+                    const modalButton = document.getElementById(modalId);
+                    if (modalButton) {
+                        modalButton.click();
+                    }
+                }, { once: true });
+            }
+
+            // Atualizar os contadores periodicamente (opcional)
+            setInterval(updateCounters, 30000); // Atualiza a cada 30 segundos
+
+            async function updateCounters() {
+                try {
+                    const response = await fetch('/Dashboard/GetCounts');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('projectsCount').textContent = data.projectsCount;
+                        document.getElementById('experienceCount').textContent = data.experienceCount;
+                        document.getElementById('educationCount').textContent = data.educationCount;
+                        document.getElementById('skillsCount').textContent = data.skillsCount;
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar contadores:', error);
+                }
+            }
+        });
+    </script>
 }
