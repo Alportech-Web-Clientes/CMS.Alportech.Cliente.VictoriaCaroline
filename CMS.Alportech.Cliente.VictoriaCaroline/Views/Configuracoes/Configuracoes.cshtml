@@ -54,7 +54,7 @@
 @section Styles {
     <style>
         .settings-container {
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 20px;
         }
@@ -198,6 +198,20 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Mostrar notificações
+            var successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            var errorMessage = @Html.Raw(Json.Serialize(TempData["ErrorMessage"]));
+            console.log(successMessage);
+            console.log(errorMessage);
+
+            if (successMessage) {
+                showNotification(successMessage, "success");
+            }
+
+            if (errorMessage) {
+                showNotification(errorMessage, "error");
+            }
+
             // Atualizar Nome de Usuário
             document.getElementById("updateUsernameBtn").addEventListener("click", async function () {
                 const novoNome = document.getElementById("username").value.trim();
@@ -267,6 +281,7 @@
 
                     if (result.success) {
                         location.reload();
+                        showNotification("Senha atualizada com sucesso!");
                     } else {
                         showNotification(result.message, "error");
                     }

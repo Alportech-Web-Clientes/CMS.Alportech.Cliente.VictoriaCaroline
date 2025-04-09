@@ -72,7 +72,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             destaque.IdDestaque = Guid.NewGuid().ToString();
             destaque.DataCriacaoDestaque = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbxDKDjw0pTVcSua-WKcnEB0m66as93QnH5nCg50BPxedd8lbL-rgFK-GEO-v_ng-9g6Bg/exec";
+            var url = "https://script.google.com/macros/s/AKfycbzxIIPt2pLpHYPnPQvoD8bb52H1XT-gmCAgyGSuX4z7hatkYp9TyRt4QNBS2k_bO7xKxQ/exec";
             var content = new StringContent(JsonConvert.SerializeObject(destaque), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -159,7 +159,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 1 - Deleta destaque antigo
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbx6yn5J3JrG-nxmC5BXwqKZSnSHpBJqnV5scAVdrWlIdhAmiSn61Kuj7uNYSA0mojrPsw/exec";
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbzT6GCaFqVn_xBhnWRiEyCyJrHAB7y9XFldGHLoAJlKyGzjzdux-uHGcwr_B_Y7UNTFNw/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdDestaque = destaque.IdDestaque }), Encoding.UTF8, "application/json");
             var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -169,7 +169,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 2 - Recria o destaque com as novas informações
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbxDKDjw0pTVcSua-WKcnEB0m66as93QnH5nCg50BPxedd8lbL-rgFK-GEO-v_ng-9g6Bg/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbzxIIPt2pLpHYPnPQvoD8bb52H1XT-gmCAgyGSuX4z7hatkYp9TyRt4QNBS2k_bO7xKxQ/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(destaque), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 
@@ -219,7 +219,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Destaque não encontrado ou você não tem permissão para excluí-lo." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbx6yn5J3JrG-nxmC5BXwqKZSnSHpBJqnV5scAVdrWlIdhAmiSn61Kuj7uNYSA0mojrPsw/exec";
+            var url = "https://script.google.com/macros/s/AKfycbzT6GCaFqVn_xBhnWRiEyCyJrHAB7y9XFldGHLoAJlKyGzjzdux-uHGcwr_B_Y7UNTFNw/exec";
             var content = new StringContent(JsonConvert.SerializeObject(new { IdDestaque = idDestaque }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 

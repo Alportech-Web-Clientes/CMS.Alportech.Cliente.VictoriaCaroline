@@ -68,31 +68,40 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
 
             var usuario = JsonConvert.DeserializeObject<Usuario>(usuarioLogado);
 
-            var url = "https://script.google.com/macros/s/AKfycbyOBAlmZn_UloNDZjCEWyRxQ3mdGxYJ3HTqUWf00a9kvjyzaoebfwf9Kqe62-mvop3QGQ/exec";
-            var content = new StringContent(JsonConvert.SerializeObject(new
-            {
-                IdUsuario = usuario?.IdUsuario,
-                NomeUsuario = model.NovoNome,
-                TipoAtualizacao = "nome"
-            }), Encoding.UTF8, "application/json");
+            // 1. Deletar o usuário atual
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbzTgS75Y8RQhf4QotfJ5QKy7FhwxTuHOuf1gI89Lb_jiiy-FZZCcz2Rui7LWDb-cjKouQ/exec";
+            var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdUsuario = usuario?.IdUsuario }), Encoding.UTF8, "application/json");
+            var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
-            var response = await _httpClient.PostAsync(url, content);
-
-            if (!response.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode)
             {
-                return Json(new { success = false, message = "Erro ao comunicar com o serviço externo." });
+                return Json(new { success = false, message = "Erro ao deletar usuário antes da atualização." });
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+            // 2. Atualizar o nome
+            usuario!.NomeUsuario = model.NovoNome;
+
+            // 3. Recriar o usuário com os dados atualizados
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbwNVUpsDqJ28cw-fcl2f6MOtxeby53-pYDvtcl0arIbrZ2ozX_sCwI8YpXhaRu31iG2iQ/exec";
+            var createContent = new StringContent(JsonConvert.SerializeObject(usuario), Encoding.UTF8, "application/json");
+            var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
+
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                return Json(new { success = false, message = "Erro ao recriar usuário com dados atualizados." });
+            }
+
+            var createResponseContent = await createResponse.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<dynamic>(createResponseContent);
 
             if (result?.success == true)
             {
-                usuario!.NomeUsuario = model.NovoNome;
                 HttpContext.Session.SetString("UsuarioLogado", JsonConvert.SerializeObject(usuario));
+                TempData["SuccessMessage"] = "Nome atualizado com sucesso!";
                 return Json(new { success = true, message = "Nome atualizado com sucesso!" });
             }
 
+            TempData["ErrorMessage"] = result?.message ?? "Erro ao atualizar nome.";
             return Json(new { success = false, message = result?.message ?? "Erro ao atualizar nome." });
         }
 
@@ -122,31 +131,40 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Senha atual incorreta." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbyOBAlmZn_UloNDZjCEWyRxQ3mdGxYJ3HTqUWf00a9kvjyzaoebfwf9Kqe62-mvop3QGQ/exec";
-            var content = new StringContent(JsonConvert.SerializeObject(new
-            {
-                IdUsuario = usuario?.IdUsuario,
-                SenhaHash = model.NovaSenha,
-                TipoAtualizacao = "senha"
-            }), Encoding.UTF8, "application/json");
+            // 1. Deletar o usuário atual
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbzTgS75Y8RQhf4QotfJ5QKy7FhwxTuHOuf1gI89Lb_jiiy-FZZCcz2Rui7LWDb-cjKouQ/exec";
+            var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdUsuario = usuario?.IdUsuario }), Encoding.UTF8, "application/json");
+            var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
-            var response = await _httpClient.PostAsync(url, content);
-
-            if (!response.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode)
             {
-                return Json(new { success = false, message = "Erro ao comunicar com o serviço externo." });
+                return Json(new { success = false, message = "Erro ao deletar usuário antes da atualização." });
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+            // 2. Atualizar a senha
+            usuario!.SenhaHash = model.NovaSenha;
+
+            // 3. Recriar o usuário com os dados atualizados
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbwNVUpsDqJ28cw-fcl2f6MOtxeby53-pYDvtcl0arIbrZ2ozX_sCwI8YpXhaRu31iG2iQ/exec";
+            var createContent = new StringContent(JsonConvert.SerializeObject(usuario), Encoding.UTF8, "application/json");
+            var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
+
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                return Json(new { success = false, message = "Erro ao recriar usuário com dados atualizados." });
+            }
+
+            var createResponseContent = await createResponse.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<dynamic>(createResponseContent);
 
             if (result?.success == true)
             {
-                usuario!.SenhaHash = model.NovaSenha;
                 HttpContext.Session.SetString("UsuarioLogado", JsonConvert.SerializeObject(usuario));
+                TempData["SuccessMessage"] = "Senha atualizada com sucesso!";
                 return Json(new { success = true, message = "Senha atualizada com sucesso!" });
             }
 
+            TempData["ErrorMessage"] = result?.message ?? "Erro ao atualizar senha.";
             return Json(new { success = false, message = result?.message ?? "Erro ao atualizar senha." });
         }
 
@@ -155,6 +173,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
         {
             if (string.IsNullOrWhiteSpace(model.FotoBase64))
             {
+                TempData["ErrorMessage"] = "Nenhuma imagem foi enviada.";
                 return Json(new { success = false, message = "Nenhuma imagem foi enviada." });
             }
 
@@ -166,31 +185,46 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
 
             var usuario = JsonConvert.DeserializeObject<Usuario>(usuarioLogado);
 
-            var url = "https://script.google.com/macros/s/AKfycbyOBAlmZn_UloNDZjCEWyRxQ3mdGxYJ3HTqUWf00a9kvjyzaoebfwf9Kqe62-mvop3QGQ/exec";
-            var content = new StringContent(JsonConvert.SerializeObject(new
-            {
-                IdUsuario = usuario?.IdUsuario,
-                FotoPerfil = model.FotoBase64,
-                TipoAtualizacao = "foto"
-            }), Encoding.UTF8, "application/json");
+            // 1. Deletar o usuário atual
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbzTgS75Y8RQhf4QotfJ5QKy7FhwxTuHOuf1gI89Lb_jiiy-FZZCcz2Rui7LWDb-cjKouQ/exec";
+            var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdUsuario = usuario?.IdUsuario }), Encoding.UTF8, "application/json");
+            var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
-            var response = await _httpClient.PostAsync(url, content);
-
-            if (!response.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode)
             {
-                return Json(new { success = false, message = "Erro ao comunicar com o serviço externo." });
+                return Json(new { success = false, message = "Erro ao deletar usuário antes da atualização." });
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+            // 2. Atualizar a foto
+            usuario!.FotoPerfil = model.FotoBase64;
+
+            // 3. Recriar o usuário com os dados atualizados
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbwNVUpsDqJ28cw-fcl2f6MOtxeby53-pYDvtcl0arIbrZ2ozX_sCwI8YpXhaRu31iG2iQ/exec";
+            var createContent = new StringContent(JsonConvert.SerializeObject(usuario), Encoding.UTF8, "application/json");
+            var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
+
+            if (!createResponse.IsSuccessStatusCode)
+            {
+                TempData["ErrorMessage"] = "Erro ao recriar usuário com dados atualizados.";
+                return Json(new { success = false, message = "Erro ao recriar usuário com dados atualizados." });
+            }
+
+            var createResponseContent = await createResponse.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<dynamic>(createResponseContent);
 
             if (result?.success == true)
             {
-                usuario!.FotoPerfil = model.FotoBase64;
                 HttpContext.Session.SetString("UsuarioLogado", JsonConvert.SerializeObject(usuario));
-                return Json(new { success = true, message = "Foto de perfil atualizada com sucesso!", fotoUrl = $"data:image/png;base64,{model.FotoBase64}" });
+                TempData["SuccessMessage"] = "Foto de perfil atualizada com sucesso!";
+                return Json(new
+                {
+                    success = true,
+                    message = "Foto de perfil atualizada com sucesso!",
+                    fotoUrl = $"data:image/png;base64,{model.FotoBase64}"
+                });
             }
 
+            TempData["ErrorMessage"] = result?.message ?? "Erro ao atualizar foto de perfil.";
             return Json(new { success = false, message = result?.message ?? "Erro ao atualizar foto de perfil." });
         }
     }

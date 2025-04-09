@@ -73,7 +73,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             formacao.IdFormacao = Guid.NewGuid().ToString();
             formacao.DataCriacaoFormacao = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbzt1Rrl7ouVFb36vEzAX5GJ2EzACap3x646qV8_2UGB3lWD0DsJx8H_qIZTicKPYPmN/exec";
+            var url = "https://script.google.com/macros/s/AKfycbxZCkClYrWdeFnnKVLFTPODsbojsuRuzhgSfLqCtgRlRxsi5zR-5IOAal-IBFSQ7yugCg/exec";
             var content = new StringContent(JsonConvert.SerializeObject(formacao), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -165,7 +165,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔸 1 - Deleta formação antiga
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbxrbnVdoVK2JLDeir3xqSFFi9eqBR71qjsPLzbrfzBKd2GN4a98HoOpnTwfnAm6Sfs6WQ/exec";
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbx2DRhov6WvsAlUTYT-yXglurnwziiv2rv6yboiEBbKDT7K6_0VPVHdWcOKb9PrtgoLzA/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdFormacao = formacao.IdFormacao }), Encoding.UTF8, "application/json");
             var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -175,7 +175,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔸 2 - Recria a formação com as novas informações (usando mesmo IdFormacao)
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbzt1Rrl7ouVFb36vEzAX5GJ2EzACap3x646qV8_2UGB3lWD0DsJx8H_qIZTicKPYPmN/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbxZCkClYrWdeFnnKVLFTPODsbojsuRuzhgSfLqCtgRlRxsi5zR-5IOAal-IBFSQ7yugCg/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(formacao), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 
@@ -225,7 +225,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Formação não encontrada ou você não tem permissão para excluí-la." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbxrbnVdoVK2JLDeir3xqSFFi9eqBR71qjsPLzbrfzBKd2GN4a98HoOpnTwfnAm6Sfs6WQ/exec";
+            var url = "https://script.google.com/macros/s/AKfycbx2DRhov6WvsAlUTYT-yXglurnwziiv2rv6yboiEBbKDT7K6_0VPVHdWcOKb9PrtgoLzA/exec";
             var content = new StringContent(JsonConvert.SerializeObject(new { IdFormacao = idFormacao }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 

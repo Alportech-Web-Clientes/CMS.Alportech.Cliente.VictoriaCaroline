@@ -11,19 +11,11 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Services
     {
         private readonly HttpClient _httpClient;
 
-        private readonly string _dashboard = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Usuarios";
-        private readonly string _redesSociais = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=RedesSociais";
-        private readonly string _stories = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Stories";
-        private readonly string _projetos = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Projetos";
-        private readonly string _consquistas = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Conquistas";
-        private readonly string _areasAtuacao = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=AreasAtuacao";
-        private readonly string _experiencias = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Experiencias";
-        private readonly string _formacoes = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=Formacoes";
-        private readonly string _urlAba = "https://docs.google.com/spreadsheets/d/1ih_vDXBSDPJgpBFScJbGrfZ-IBWuXo4uyNBBvVjl8QY/gviz/tq?tqx=out:csv&sheet=";
-        //user
-        private readonly string _atualizarSenhaUsuarioExec = "https://script.google.com/macros/s/AKfycbxXPq1XeG3bHripXC6Ptknqav0uaBNVkrKbdlYjEy3lDLTxTx4hjPTqVtn0sp7bbCuhAA/exec";
-        private readonly string _criarUsuarioExec = "https://script.google.com/macros/s/AKfycby74M4zXR40IHw9ECob4zbK83yKXbDNXA5erODzRD75mtHK13_pKy6qb1UqNOx48n9uPA/exec";
-        private readonly string _criarProjeto = "https://script.google.com/macros/s/AKfycbyk0FFkgNNbJxc26_TSUdStuPeRqzIK-s5TEvIwTJmMVq8cpZ1DSPnKeiLGqv56k6YXHw/exec";
+        
+        private readonly string _projetos = "https://docs.google.com/spreadsheets/d/1pfvcWvSELjRCuts9Aih_ydKvNsBQDGXG_b4gUNkZe5o/gviz/tq?tqx=out:csv&sheet=Projetos";
+        private readonly string _urlAba = "https://docs.google.com/spreadsheets/d/1pfvcWvSELjRCuts9Aih_ydKvNsBQDGXG_b4gUNkZe5o/gviz/tq?tqx=out:csv&sheet=";
+        private readonly string _atualizarSenhaUsuarioExec = "https://script.google.com/macros/s/AKfycbyi0276TQ8ULLuDy2PK_C7VSL6KcDTY7ELqjOOi8hqhQ4_dueoIQwRnDb66A5tESzpqpg/exec";
+        private readonly string _criarUsuarioExec = "https://script.google.com/macros/s/AKfycbwNVUpsDqJ28cw-fcl2f6MOtxeby53-pYDvtcl0arIbrZ2ozX_sCwI8YpXhaRu31iG2iQ/exec";
 
         public GoogleSheetsService(HttpClient httpClient)
         {

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CMS.Alportech.Cliente.VictoriaCaroline")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7b9693904b39b6978198b2f0f080d45992095d0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3a20cc7f431b2c4d35f9c9d7ab6b4387c1b5acb4")]
 [assembly: System.Reflection.AssemblyProductAttribute("CMS.Alportech.Cliente.VictoriaCaroline")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CMS.Alportech.Cliente.VictoriaCaroline")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

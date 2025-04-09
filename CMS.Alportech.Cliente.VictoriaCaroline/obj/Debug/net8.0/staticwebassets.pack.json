@@ -53,6 +53,10 @@
       "PackagePath": "staticwebassets\\images\\default_rede_youtube.png"
     },
     {
+      "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\default_user_icon.png",
+      "PackagePath": "staticwebassets\\images\\default_user_icon.png"
+    },
+    {
       "Id": "C:\\GIT_REP\\Alportech Clientes\\Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\CMS.Alportech.Cliente.VictoriaCaroline\\wwwroot\\images\\logo.webp",
       "PackagePath": "staticwebassets\\images\\logo.webp"
     },

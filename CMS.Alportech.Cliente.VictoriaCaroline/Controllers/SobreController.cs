@@ -90,7 +90,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             if (sobreExistente != null)
             {
                 // 🔹 1 - Deleta registro antigo
-                var deletarUrl = "https://script.google.com/macros/s/AKfycbzIz-OsVm9VVN5IDUtVQmeqIvbH5Y2Ogsh-sX-tZU8lCmsH7TLKygJZQvQwcbaaFvQf-g/exec";
+                var deletarUrl = "https://script.google.com/macros/s/AKfycbxFftP4ekiCZvy5NKp2uLoMEK8qFezjsR6_h9YlmBb72VQP9Ia9FPgWOzmf-bkoD13PjA/exec";
                 var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdUsuario = sobre.IdUsuario }), Encoding.UTF8, "application/json");
                 var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -101,7 +101,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔹 2 - Adiciona novo registro (com mesmo IdUsuario)
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbwSVmYPvLc1fSuqQW4yvaZBXo84kL7o1bSS6XfTsbvirLotWEoXTSzuhEGN5ga5zxzFrA/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbzbg9VDw0oqJNF2tZQGYMQNfCQTQoWBjZCL6mtxjFjp-2ZCLcm9fitO8V2c2m_KLaRWuw/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(sobre), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 

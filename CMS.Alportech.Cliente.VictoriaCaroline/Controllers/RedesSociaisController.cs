@@ -91,11 +91,9 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
 
             foreach (var rede in redesSociais)
             {
-                if (string.IsNullOrWhiteSpace(rede.TipoRedeSocial) ||
-                    string.IsNullOrWhiteSpace(rede.UrlRedeSocial) ||
-                    !Uri.TryCreate(rede.UrlRedeSocial, UriKind.Absolute, out _))
+                if (string.IsNullOrWhiteSpace(rede.TipoRedeSocial) || string.IsNullOrWhiteSpace(rede.UrlRedeSocial))
                 {
-                    return Json(new { success = false, message = "Preencha todos os campos corretamente." });
+                    return Json(new { success = false, message = "Tipo de rede social e URL da rede social obrigatórios" });
                 }
             }
 
@@ -111,7 +109,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 1. Deletar redes sociais existentes
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbwzzXEUHp-Hi0B2ia7PXrk4qQpuAFgllec1-dTow9-YkTMnaxXuOx3FAEVmuU8DRhQqxg/exec"; var deleteContent = new StringContent(
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbyfetsqrIuxs38weuWjHXsFMs_zc7iDpQ3iaFBB2SMcBWjVLVfD65pL51sYLskOfPM1tA/exec"; var deleteContent = new StringContent(
                 JsonConvert.SerializeObject(new { IdUsuario = usuario!.IdUsuario }),
                 Encoding.UTF8,
                 "application/json");
@@ -124,7 +122,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 2. Adicionar novas redes sociais
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbxU-5XgSBiYaGmPM1xxfFgcEZqEBckieKfco2JcsurEmRZGtOgB-puCh14EPi7Ao0xa2w/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbygocTYhBaR_a_NnDiNqMK_IDsaTqVCFnk59b4oaM1DLTYM3swihTBNZPaeme4tK9-Kbg/exec";
             var createContent = new StringContent(
                 JsonConvert.SerializeObject(redesSociais),
                 Encoding.UTF8,
@@ -158,7 +156,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Usuário não autenticado." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbyXz1ZjRBn3yleKzKHlnTVQ_E02AtyP3v15gFcCc4YiA-a8cNwIkB63K2rA9JxhCacVmw/exec";
+            var url = "https://script.google.com/macros/s/AKfycbxZoEp6WI2S6XgHDLWeijGmnWWPb2vCKuScWNZ870txx4XV_8TqmDFC6z4I6T4LE0Fh/exec";
             var content = new StringContent(
                 JsonConvert.SerializeObject(new { IdRedeSocial = idRedeSocial }),
                 Encoding.UTF8,

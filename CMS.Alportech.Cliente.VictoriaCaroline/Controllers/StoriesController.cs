@@ -71,7 +71,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             storie.IdStorie = Guid.NewGuid().ToString();
             storie.DataCriacaoStorie = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbw6K7j5c18ssZiZa2w5ht8jK_9ARgZf0I-AWaAwnjDxS_MsXapqDVCrlIjA9XomcGhwnA/exec";
+            var url = "https://script.google.com/macros/s/AKfycbxHfCb_e_zPcoky6RwuFAWGQSvgEioB-fHlA1n7qoaj1iH2UIj7_I0iXL537q9HYqGacg/exec";
             var content = new StringContent(JsonConvert.SerializeObject(storie), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -157,7 +157,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             storie.DataCriacaoStorie = storieOriginal.DataCriacaoStorie;
 
             // 1 - Deleta storie antigo
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbzGNWGfuEp5q6cJXSTr7uy5bxn2AqM6Gb7kf59V9pQQdphxvaZ_am95iJ1edpeJRK23/exec";
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbygCDGKPLjLoYHuEzH51kYU0N9YuAqZLjQVOFkBQl21Pcl88EeSLSfiWl5ucAowegI82A/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdStorie = storie.IdStorie }), Encoding.UTF8, "application/json");
             var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -167,7 +167,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 2 - Recria o storie com as novas informações
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbw6K7j5c18ssZiZa2w5ht8jK_9ARgZf0I-AWaAwnjDxS_MsXapqDVCrlIjA9XomcGhwnA/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbxHfCb_e_zPcoky6RwuFAWGQSvgEioB-fHlA1n7qoaj1iH2UIj7_I0iXL537q9HYqGacg/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(storie), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 
@@ -217,7 +217,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Storie não encontrado ou você não tem permissão para excluí-lo." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbzGNWGfuEp5q6cJXSTr7uy5bxn2AqM6Gb7kf59V9pQQdphxvaZ_am95iJ1edpeJRK23/exec";
+            var url = "https://script.google.com/macros/s/AKfycbygCDGKPLjLoYHuEzH51kYU0N9YuAqZLjQVOFkBQl21Pcl88EeSLSfiWl5ucAowegI82A/exec";
             var content = new StringContent(JsonConvert.SerializeObject(new { IdStorie = idStorie }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 

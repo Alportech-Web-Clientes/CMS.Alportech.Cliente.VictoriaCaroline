@@ -70,7 +70,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             conquista.IdConquista = Guid.NewGuid().ToString();
             conquista.DataCriacaoConquista = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbxrM2sgqzeYRYUZcINg4deEZ4BZUwnsN2xRYJxP1NeC7ijFTfX_xln4EIhPhxgIUqCw-w/exec";
+            var url = "https://script.google.com/macros/s/AKfycbzyupbbYL_6zKP4E64xOFPOV9NK8IDORopJeI_8Rrpi5bxZZ4gLX3kLp8sTF7ERgRD4WA/exec";
             var content = new StringContent(JsonConvert.SerializeObject(conquista), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -161,7 +161,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 1 - Deleta conquista antiga
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbyNazRvSqbjg2qHqBar4G3rm12hnxCutFZXPnyM0OhxZtB5OULGFXllwqwm7EMzPiPO2g/exec";
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbxXxQB3e1GVfBVcGFJt3Opg3gyBO-Oky5SerWonh4180iLr-PGRh_j-keatDeLvGnZf4Q/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdConquista = conquista.IdConquista }), Encoding.UTF8, "application/json");
             var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -171,7 +171,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 2 - Recria a conquista com as novas informações
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbxrM2sgqzeYRYUZcINg4deEZ4BZUwnsN2xRYJxP1NeC7ijFTfX_xln4EIhPhxgIUqCw-w/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbzyupbbYL_6zKP4E64xOFPOV9NK8IDORopJeI_8Rrpi5bxZZ4gLX3kLp8sTF7ERgRD4WA/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(conquista), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 
@@ -221,7 +221,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Conquista não encontrada ou você não tem permissão para excluí-la." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbyNazRvSqbjg2qHqBar4G3rm12hnxCutFZXPnyM0OhxZtB5OULGFXllwqwm7EMzPiPO2g/exec";
+            var url = "https://script.google.com/macros/s/AKfycbxXxQB3e1GVfBVcGFJt3Opg3gyBO-Oky5SerWonh4180iLr-PGRh_j-keatDeLvGnZf4Q/exec";
             var content = new StringContent(JsonConvert.SerializeObject(new { IdConquista = idConquista }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 

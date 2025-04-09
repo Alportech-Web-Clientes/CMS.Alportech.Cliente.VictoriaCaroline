@@ -74,7 +74,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             projeto.IdProjeto = Guid.NewGuid().ToString();
             projeto.DataCriacaoProjeto = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            var url = "https://script.google.com/macros/s/AKfycbyk0FFkgNNbJxc26_TSUdStuPeRqzIK-s5TEvIwTJmMVq8cpZ1DSPnKeiLGqv56k6YXHw/exec";
+            var url = "https://script.google.com/macros/s/AKfycbyaCLz1mi0k_NI2pQZhAvD3g0yDzQqbCrl1GXV3yjO0XvW_j8KLp-fYCEdGlHE06HzDFA/exec";
             var content = new StringContent(JsonConvert.SerializeObject(projeto), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
@@ -168,7 +168,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔸 1 - Deleta projeto antigo
-            var deletarUrl = "https://script.google.com/macros/s/AKfycbxVSD2FEymOAeyPOiTS9ljQSOM5bC3PVjTn8E-cfo2kdNIe31NTdSK3JWGHa4041afx/exec";
+            var deletarUrl = "https://script.google.com/macros/s/AKfycbyLgapr-7VUtZFLWiHHFZ84Bf65bARR3RJ-DWFGxJZ5w8hPcRWbqLHodY_NMnMD_PIEUA/exec";
             var deleteContent = new StringContent(JsonConvert.SerializeObject(new { IdProjeto = projeto.IdProjeto }), Encoding.UTF8, "application/json");
             var deleteResponse = await _httpClient.PostAsync(deletarUrl, deleteContent);
 
@@ -178,7 +178,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
             }
 
             // 🔸 2 - Recria o projeto com as novas informações (usando mesmo IdProjeto)
-            var registrarUrl = "https://script.google.com/macros/s/AKfycbyk0FFkgNNbJxc26_TSUdStuPeRqzIK-s5TEvIwTJmMVq8cpZ1DSPnKeiLGqv56k6YXHw/exec";
+            var registrarUrl = "https://script.google.com/macros/s/AKfycbyaCLz1mi0k_NI2pQZhAvD3g0yDzQqbCrl1GXV3yjO0XvW_j8KLp-fYCEdGlHE06HzDFA/exec";
             var createContent = new StringContent(JsonConvert.SerializeObject(projeto), Encoding.UTF8, "application/json");
             var createResponse = await _httpClient.PostAsync(registrarUrl, createContent);
 
@@ -229,7 +229,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Projeto não encontrado ou você não tem permissão para excluí-lo." });
             }
 
-            var url = "https://script.google.com/macros/s/AKfycbxVSD2FEymOAeyPOiTS9ljQSOM5bC3PVjTn8E-cfo2kdNIe31NTdSK3JWGHa4041afx/exec";
+            var url = "https://script.google.com/macros/s/AKfycbyLgapr-7VUtZFLWiHHFZ84Bf65bARR3RJ-DWFGxJZ5w8hPcRWbqLHodY_NMnMD_PIEUA/exec";
             var content = new StringContent(JsonConvert.SerializeObject(new { IdProjeto = idProjeto }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 

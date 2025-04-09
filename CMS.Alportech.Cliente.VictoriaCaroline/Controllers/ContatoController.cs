@@ -61,9 +61,14 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
 
             var contatoUsuario = contatos.FirstOrDefault(p => p.IdUsuario == usuario!.IdUsuario);
 
+            // Adiciona o '+' de volta ao telefone se existir
+            if (contatoUsuario != null && !string.IsNullOrEmpty(contatoUsuario.Telefone) && !contatoUsuario.Telefone.StartsWith("+"))
+            {
+                contatoUsuario.Telefone = "+" + contatoUsuario.Telefone;
+            }
+
             return Json(new { success = true, contato = contatoUsuario });
         }
-
         [HttpPost]
         public async Task<IActionResult> AtualizarContato([FromBody] Contato contato)
         {
@@ -78,10 +83,16 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
                 return Json(new { success = false, message = "Usuário não autenticado." });
             }
 
+            // Tratamento do número de telefone - remove o '+' se existir
+            if (!string.IsNullOrEmpty(contato.Telefone))
+            {
+                contato.Telefone = contato.Telefone.Replace("+", "").Trim();
+            }
+
             var usuario = JsonConvert.DeserializeObject<Usuario>(usuarioLogado);
             contato.IdUsuario = usuario?.IdUsuario!;
 
-            var url = "https://script.google.com/macros/s/AKfycbwaAKEHm-27UkVL_Z8Og9wBTa2oEuPhnwHGmhfNzKAWqnblRP012iEm1r1VcMw8-Kye4w/exec";
+            var url = "https://script.google.com/macros/s/AKfycbzd3iyZzy-Tc5YNMiVP8T9p1eAy9fSfFwfdDGMfoc_h0PYwgyH7NwpTRlNboDdAPfe9MA/exec";
             var content = new StringContent(JsonConvert.SerializeObject(contato), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);
 
