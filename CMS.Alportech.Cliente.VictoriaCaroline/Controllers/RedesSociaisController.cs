@@ -184,7 +184,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
         {
             return tipoRedeSocial switch
             {
-                "email" => "Email",
+                "envelope" => "Email",
                 "linkedin" => "LinkedIn",
                 "facebook" => "Facebook",
                 "instagram" => "Instagram",
@@ -199,7 +199,7 @@ namespace CMS.Alportech.Cliente.VictoriaCaroline.Controllers
         {
             var imagePath = tipoRedeSocial switch
             {
-                "email" => "default_rede_email.png",
+                "envelope" => "default_rede_email.png",
                 "linkedin" => "default_rede_linkedin.png",
                 "facebook" => "default_rede_facebook.png",
                 "instagram" => "default_rede_instagram.png",

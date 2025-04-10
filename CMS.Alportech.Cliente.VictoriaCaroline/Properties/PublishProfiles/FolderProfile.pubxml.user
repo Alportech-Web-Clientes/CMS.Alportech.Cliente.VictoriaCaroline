@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2025-04-10T13:32:21.2639807Z||;True|2025-04-10T10:32:14.0302709-03:00||;True|2025-04-10T10:25:55.1207627-03:00||;True|2025-04-08T22:40:56.4458905-03:00||;True|2025-04-08T22:40:47.9846952-03:00||;True|2025-04-08T22:30:06.9422480-03:00||;True|2025-04-08T22:26:34.3904918-03:00||;True|2025-04-08T22:26:05.7735360-03:00||;True|2025-04-08T22:10:27.7357662-03:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

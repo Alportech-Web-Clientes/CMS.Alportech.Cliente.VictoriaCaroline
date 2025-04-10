@@ -1,0 +1,9 @@
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CMS.Alportech.Cliente.VictoriaCaroline.exe
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\appsettings.Development.json
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\appsettings.json
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CMS.Alportech.Cliente.VictoriaCaroline.dll
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CMS.Alportech.Cliente.VictoriaCaroline.deps.json
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CMS.Alportech.Cliente.VictoriaCaroline.runtimeconfig.json
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CMS.Alportech.Cliente.VictoriaCaroline.pdb
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\CsvHelper.dll
+C:\GIT_REP\Alportech Clientes\Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\CMS.Alportech.Cliente.VictoriaCaroline\obj\Release\net6.0\PubTmp\Out\Newtonsoft.Json.dll
